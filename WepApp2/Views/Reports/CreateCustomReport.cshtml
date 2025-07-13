@@ -1,5 +1,4 @@
-﻿@model WepApp2.Models.CustomReportViewModel
-@{
+﻿@{
     Layout = "~/Views/Shared/_LayoutReports.cshtml";
 }
 
@@ -21,11 +20,13 @@
         }
 
         <!-- النموذج -->
-        <form asp-action="CreateCustomReport" method="post">
+        <form action="@Url.Action("CreateCustomReport", "Reports")" method="post">
+            @Html.AntiForgeryToken()
+
             <!-- عنوان التقرير -->
             <div class="report-form-group">
                 <label class="report-form-label">عنوان التقرير</label>
-                <input asp-for="ReportTitle"
+                <input name="reportTitle"
                        class="report-form-control"
                        placeholder="مثال: تقرير الخدمات الشهري"
                        required />
@@ -34,7 +35,7 @@
             <!-- نوع التقرير -->
             <div class="report-form-group">
                 <label class="report-form-label">نوع التقرير</label>
-                <select asp-for="ReportType" class="report-form-control" id="reportType" required>
+                <select name="reportType" class="report-form-control" id="reportType" required>
                     <option value="">-- اختر نوع التقرير --</option>
                     <option value="تقرير الخدمات">تقرير الخدمات</option>
                     <option value="تقرير الأجهزة">تقرير الأجهزة</option>
@@ -46,7 +47,7 @@
             <!-- قسم تقرير الخدمات -->
             <div id="serviceFilterSection" class="report-form-group" style="display: none;">
                 <label class="report-form-label">نوع الخدمة</label>
-                <select asp-for="ServiceType" class="report-form-control" id="serviceType">
+                <select name="serviceType" class="report-form-control" id="serviceType">
                     <option value="">-- جميع الخدمات --</option>
                     <option value="زيارة المعمل">زيارة المعمل</option>
                     <option value="الاستشارات التقنية">الاستشارات التقنية</option>
@@ -59,7 +60,7 @@
             <!-- قسم تقرير الأجهزة -->
             <div id="deviceFilterSection" class="report-form-group" style="display: none;">
                 <label class="report-form-label">حالة الجهاز</label>
-                <select asp-for="DeviceStatus" class="report-form-control" id="deviceStatus">
+                <select name="deviceStatus" class="report-form-control" id="deviceStatus">
                     <option value="">-- الكل --</option>
                     <option value="نشط">نشط</option>
                     <option value="تحت الصيانة">تحت الصيانة</option>
@@ -70,7 +71,7 @@
             <!-- قسم تقرير المستخدمين -->
             <div id="userFilterSection" class="report-form-group" style="display: none;">
                 <label class="report-form-label">نوع المستخدم</label>
-                <select asp-for="UserType" class="report-form-control" id="userType">
+                <select name="userType" class="report-form-control" id="userType">
                     <option value="">-- الكل --</option>
                     <option value="مشرف">مشرف</option>
                     <option value="عضو هيئة تدريس">عضو هيئة تدريس</option>
@@ -81,7 +82,7 @@
             <!-- قسم تقرير الطلبات -->
             <div id="requestFilterSection" class="report-form-group" style="display: none;">
                 <label class="report-form-label">حالة الطلب</label>
-                <select asp-for="RequestStatus" class="report-form-control" id="requestStatus">
+                <select name="requestStatus" class="report-form-control" id="requestStatus">
                     <option value="">-- الكل --</option>
                     <option value="جديد">جديد</option>
                     <option value="مسند">مسند</option>
@@ -96,12 +97,12 @@
             <div class="date-fields-row">
                 <div class="date-field-wrapper">
                     <label>من تاريخ</label>
-                    <input type="date" asp-for="FromDate" class="report-form-control" />
+                    <input type="date" name="fromDate" class="report-form-control" />
                 </div>
                 <span class="date-separator">-</span>
                 <div class="date-field-wrapper">
                     <label>إلى تاريخ</label>
-                    <input type="date" asp-for="ToDate" class="report-form-control" />
+                    <input type="date" name="toDate" class="report-form-control" />
                 </div>
             </div>
 
@@ -123,7 +124,7 @@
                 <button type="submit" class="btn-create-report">
                     إنشاء التقرير
                 </button>
-                <a asp-action="Index" class="btn-back">
+                <a href="@Url.Action("Index", "Reports")" class="btn-back">
                     العودة
                 </a>
             </div>
@@ -147,8 +148,8 @@
 
         // تعريف الحقول لكل نوع
         const generalFields = [
-            { value: "اسم الخدمة", label: "اسم الخدمة" },
             { value: "نوع الخدمة", label: "نوع الخدمة" },
+            { value: "وصف الخدمة", label: "وصف الخدمة" },
             { value: "تاريخ الطلب", label: "تاريخ الطلب" },
             { value: "المستخدم", label: "المستخدم" },
             { value: "الحالة", label: "حالة الخدمة" }
@@ -198,7 +199,9 @@
             { value: "الموقع", label: "الموقع" },
             { value: "الشركة", label: "الشركة" },
             { value: "الطراز", label: "الطراز" },
-            { value: "تاريخ آخر صيانة", label: "تاريخ آخر صيانة" }
+            { value: "تاريخ آخر صيانة", label: "تاريخ آخر صيانة" },
+           { value: "الحالة", label: "الحالة" }
+
         ];
 
         // حقول تقرير المستخدمين
@@ -210,7 +213,6 @@
             { value: "القسم", label: "القسم" },
             { value: "البريد الإلكتروني", label: "البريد الإلكتروني" },
             { value: "رقم الجوال", label: "رقم الجوال" },
-            { value: "الحالة", label: "الحالة" }
         ];
 
         // حقول تقرير الطلبات
@@ -232,7 +234,7 @@
                 div.classList.add('field-checkbox-item');
                 div.innerHTML = `
                     <label class="field-checkbox-label">
-                        <input type="checkbox" name="Fields" value="${field.value}" id="field_${field.value}">
+                        <input type="checkbox" name="fields" value="${field.value}" id="field_${field.value}">
                         <span>${field.label}</span>
                     </label>
                 `;
