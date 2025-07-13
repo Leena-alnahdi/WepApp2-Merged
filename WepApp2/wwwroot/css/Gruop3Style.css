@@ -1,8 +1,51 @@
 ﻿/* supervisor.css */
+* {
+    box-sizing: border-box;
+}
 
-/* Modal Styles */
+html {
+    direction: ltr; /* شريط التمرير على اليمين */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
 
-/* أنماط الفلاتر */
+body {
+    direction: rtl; /* المحتوى عربي */
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+    overflow-x: hidden;
+}
+
+/* إصلاح التخطيط */
+.container-fluid {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    /* إجبار شريط التمرير أن يظهر في اليمين للصفحات RTL */
+    body
+
+{
+    direction: rtl;
+    overflow-y: scroll;
+    scrollbar-gutter: stable both-edges; /* لجعل مكان الشريط محفوظ دائمًا */
+}
+
+body::-webkit-scrollbar {
+    width: 8px;
+}
+
+body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #13b35e;
+    border-radius: 4px;
+}
+
+}/* أنماط الفلاتر */
 .supervisor-filters-container {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -170,7 +213,6 @@
         font-size: 14px;
     }
 }
-
 .supervisor-overlay {
     display: none;
     position: fixed;
@@ -1116,15 +1158,18 @@ canvas {
     margin-left: auto;
 }
 
-/* Page Body Styles */
 .allreports-body {
     font-family: 'Tajawal', sans-serif;
     background-color: var(--reports-bg-light);
     color: var(--reports-text-primary);
     direction: rtl;
-    min-height: 100vh;
+    /* احذف min-height: 100vh; */
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
 }
-
+}
 /* Main content wrapper */
 body {
     background-color: var(--reports-bg-light) !important;
@@ -1398,24 +1443,6 @@ body {
     margin-bottom: 20px;
 }
 
-    /* Custom Scrollbar for Fields Container */
-    .customreport-fields-container::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .customreport-fields-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-
-    .customreport-fields-container::-webkit-scrollbar-thumb {
-        background: var(--reports-primary-color);
-        border-radius: 4px;
-    }
-
-        .customreport-fields-container::-webkit-scrollbar-thumb:hover {
-            background: var(--reports-primary-dark);
-        }
 
 /* Divider line */
 .customreport-divider {
@@ -1845,6 +1872,434 @@ canvas {
 /* End of Reports Unified Styles        */
 /* ===================================== */
 
+
+/* Reset & Base */
+.faq-body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #006C35 0%, #228B22 100%);
+    min-height: 100vh;
+    direction: rtl;
+}
+
+.faq-breadcrumb {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+}
+
+.faq-breadcrumb-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.faq-breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    font-size: 0.9rem;
+}
+
+    .faq-breadcrumb-nav a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+        .faq-breadcrumb-nav a:hover {
+            color: white;
+        }
+
+.faq-breadcrumb-separator {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0.3rem;
+}
+
+.faq-breadcrumb-current {
+    color: white;
+    font-weight: 500;
+}
+
+.faq-main {
+    padding: 2rem;
+    background: white;
+    min-height: calc(100vh - 80px);
+}
+
+.faq-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.faq-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+    .faq-header h1 {
+        color: #2C3E50;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .faq-header p {
+        color: #666;
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+.faq-section {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+    .faq-section h3 {
+        color: #006C35;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+.faq-search-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+    .faq-search-input:focus {
+        outline: none;
+        border-color: #006C35;
+    }
+
+.faq-category {
+    margin-bottom: 2rem;
+}
+
+.faq-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.faq-item {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.faq-question {
+    padding: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    transition: background 0.3s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+    .faq-question:hover {
+        background: #f8f9fa;
+    }
+
+    .faq-question h5 {
+        margin: 0;
+        color: #2C3E50;
+        font-size: 1rem;
+    }
+
+    .faq-question i {
+        color: #006C35;
+        transition: transform 0.3s ease;
+    }
+
+    .faq-question.active i {
+        transform: rotate(180deg);
+    }
+
+.faq-answer {
+    padding: 0 1rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+    .faq-answer.show {
+        padding: 1rem;
+        max-height: 500px;
+    }
+
+    .faq-answer p,
+    .faq-answer ul,
+    .faq-answer ol {
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .faq-answer li {
+        margin-bottom: 0.25rem;
+    }
+
+.faq-btn {
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.faq-btn-primary {
+    background: #006C35;
+    color: white;
+}
+
+    .faq-btn-primary:hover {
+        background: #228B22;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 108, 53, 0.3);
+    }
+body, html {
+    overflow-x: hidden !important;
+}
+
+main {
+    margin-right: 0 !important;
+}
+
+.container-fluid {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+}
+
+.row {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+
+
+.customreport-fields-container {
+    margin-top: 1rem;
+}
+
+.customreport-form-check {
+    margin-bottom: 0.5rem;
+}
+/* دعم عناصر تقارير الخدمات */
+.customreport-form-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+    color: #fff;
+}
+
+.customreport-fields-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.customreport-form-check {
+    margin-bottom: 10px;
+}
+
+.customreport-main-container {
+    padding: 40px;
+    background: linear-gradient(to bottom, #009444, #007e3a);
+    color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+.form-select,
+.form-control {
+    background-color: #fff;
+    color: #000;
+}
+
+.customreport-action-buttons {
+    margin-top: 20px;
+}
+/* وسطي العنوان */
+.customreport-section-title {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* وسطي الأزرار */
+.customreport-action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* لضمان أن يكون كامل النموذج في منتصف الشاشة */
+.customreport-main-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 3rem;
+}
+/* ===================================== */
+/* إصلاح نهائي لتوسيط الأزرار           */
+/* أضف هذا في نهاية ملف CSS            */
+/* ===================================== */
+
+/* إعادة تعيين الأنماط للزر الأساسي */
+form .wil-btn-primary,
+.wil-btn-primary {
+    text-align: center !important;
+    display: inline-block !important;
+    width: 100% !important;
+}
+
+/* استهداف زر إنشاء الحساب مباشرة */
+button#wil-submit-btn {
+    text-align: center !important;
+    display: inline-block !important;
+    width: 100% !important;
+    line-height: 1.5 !important;
+}
+
+/* إزالة أي أنماط flex قد تسبب مشاكل */
+.wil-btn-primary:not(.wil-nav-link) {
+    display: inline-block !important;
+    text-align: center !important;
+}
+
+/* التأكد من توسيط النص داخل جميع الأزرار */
+.btn.wil-btn-primary {
+    text-align: center !important;
+}
+
+/* توسيط الحاوية الأب */
+.text-center {
+    text-align: center !important;
+}
+
+    /* إضافة أنماط inline-block للتوافق */
+    .text-center .btn {
+        display: inline-block !important;
+        text-align: center !important;
+    }
+/* ===================================== */
+/* توسيط زر تسجيل الدخول                */
+/* ===================================== */
+
+/* توسيط جميع أزرار submit من نوع wil-btn-primary */
+.wil-btn-primary[type="submit"] {
+    text-align: center !important;
+    display: block !important;
+    width: 100% !important;
+    line-height: normal !important;
+    padding: 14px 30px !important;
+}
+
+/* توسيط زر تسجيل الدخول في صفحة Login */
+form .btn.wil-btn-primary {
+    text-align: center !important;
+    display: block !important;
+    width: 100% !important;
+}
+
+/* التأكد من توسيط النص مع الأيقونة */
+.wil-btn-primary i.fa-sign-in-alt {
+    margin-left: 8px !important;
+    vertical-align: middle !important;
+}
+
+/* إزالة أي تأثيرات flex */
+button.wil-btn-primary:not(.wil-nav-link) {
+    display: block !important;
+    text-align: center !important;
+}
+/* ===================================== */
+/* رسائل الخطأ والنجاح في ForgotPassword */
+/* ===================================== */
+
+/* تحسين مظهر رسائل الخطأ في صفحة استعادة كلمة المرور */
+.wil-auth-box .wil-alert {
+    margin-bottom: 20px !important;
+    padding: 15px 20px !important;
+    font-weight: 500 !important;
+    border-right-width: 4px !important;
+    animation: wil-slideDown 0.4s ease-out !important;
+}
+
+/* رسالة الخطأ */
+.wil-auth-box .wil-alert--danger {
+    background-color: #fee !important;
+    color: #c33 !important;
+    border-right-color: #dc3545 !important;
+}
+
+/* رسالة النجاح في صفحة تسجيل الدخول */
+#wil-reset-success-alert {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    border-right: 4px solid #28a745 !important;
+    animation: wil-slideDown 0.4s ease-out !important;
+}
+
+/* تحريك ظهور الرسائل */
+@keyframes wil-slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* تحريك اختفاء الرسائل */
+.wil-alert[style*="opacity: 0"] {
+    transition: all 0.3s ease-out !important;
+}
+
+/* التأكد من توسيط زر إرسال رابط الاستعادة */
+.wil-auth-box form .wil-btn-primary {
+    text-align: center !important;
+    display: block !important;
+    width: 100% !important;
+}
+.report-btn-primary:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+/* الحقول المطلوبة header */
+.fields-section .form-label {
+    margin-bottom: 0;
+}
+
+.date-field-group .form-label {
+    font-weight: normal;
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
 /* ===================================== */
 /* 9. CreateCustomReport Page Styles     */
 /* ===================================== */
@@ -1982,20 +2437,6 @@ canvas {
     border-radius: 6px;
 }
 
-    .fields-grid::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .fields-grid::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-
-    .fields-grid::-webkit-scrollbar-thumb {
-        background: #28a745;
-        border-radius: 4px;
-    }
-
 /* عنصر الحقل */
 .field-checkbox-item {
     background: white;
@@ -2112,7 +2553,6 @@ canvas {
         text-align: center;
     }
 }
-
 body {
     font-family: 'Tajawal', sans-serif;
     color: #333;
