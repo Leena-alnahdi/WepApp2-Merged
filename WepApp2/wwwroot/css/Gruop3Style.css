@@ -2240,20 +2240,31 @@ button.wil-btn-primary:not(.wil-nav-link) {
 
 /* تحسين مظهر رسائل الخطأ في صفحة استعادة كلمة المرور */
 .wil-auth-box .wil-alert {
-    margin-bottom: 20px !important;
-    padding: 15px 20px !important;
-    font-weight: 500 !important;
-    border-right-width: 4px !important;
+    margin-bottom: 25px !important;
+    padding: 18px 24px !important;
+    font-weight: 600 !important;
+    border-right-width: 5px !important;
     animation: wil-slideDown 0.4s ease-out !important;
+    font-size: 16px !important;
+    line-height: 1.8 !important;
+    letter-spacing: 0.3px !important;
 }
 
 /* رسالة الخطأ */
 .wil-auth-box .wil-alert--danger {
-    background-color: #fee !important;
-    color: #c33 !important;
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
     border-right-color: #dc3545 !important;
+    border: 1px solid #fecaca !important;
 }
 
+    /* تحسين وضوح الأيقونة */
+    .wil-auth-box .wil-alert--danger .fas {
+        color: #dc3545 !important;
+        font-size: 18px !important;
+        vertical-align: middle !important;
+        margin-left: 8px !important;
+    }
 /* رسالة النجاح في صفحة تسجيل الدخول */
 #wil-reset-success-alert {
     background-color: #d4edda !important;
