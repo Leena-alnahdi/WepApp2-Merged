@@ -1,0 +1,123 @@
+﻿@model WepApp2.Models.User
+@{
+    ViewBag.Title = "البيانات الشخصية";
+}
+
+<link rel="stylesheet" href="~/css/Gruop3Style.css" />
+
+<main class="profile-main container-fluid profile-page">
+    <div class="profile-header text-center mb-5">
+        <h1 class="mb-3">البيانات الشخصية</h1>
+    </div>
+
+    <div class="profile-section">
+        <h3 class="mb-3">المعلومات الأساسية</h3>
+        <form id="profileForm">
+            <div class="profile-form-row">
+                <div class="profile-form-group">
+                    <label for="profileName">الاسم الكامل:</label>
+                    <input type="text" id="profileName" value="@($"{Model.FirstName} {Model.LastName}")" readonly class="form-control" />
+                </div>
+                <div class="profile-form-group">
+                    <label for="profileEmail">البريد الإلكتروني:</label>
+                    <input type="email" id="profileEmail" value="@Model.Email" readonly class="form-control" />
+                </div>
+            </div>
+            <div class="profile-form-row">
+                <div class="profile-form-group">
+                    <label for="profileStudentId">الرقم الجامعي:</label>
+                    <input type="text" id="profileStudentId" value="@Model.UserName" readonly class="form-control" />
+                </div>
+                <div class="profile-form-group">
+                    <label for="profilePhone">رقم الهاتف:</label>
+                    <input type="tel" id="profilePhone" value="@Model.PhoneNumber" class="form-control" />
+                </div>
+            </div>
+            <div class="profile-form-row">
+                <div class="profile-form-group">
+                    <label for="profileCollege">الكلية:</label>
+                    <input type="text" id="profileCollege" value="@Model.Faculty" readonly class="form-control" />
+                </div>
+                <div class="profile-form-group">
+                    <label for="profileDepartment">القسم:</label>
+                    <input type="text" id="profileDepartment" value="@Model.Department" readonly class="form-control" />
+                </div>
+            </div>
+            
+            <div class="d-flex gap-3 mt-3">
+                <button type="button" class="profile-btn profile-btn-primary" onclick="enableProfileEdit()">تعديل البيانات</button>
+                <button type="submit" class="profile-btn profile-btn-success" id="saveProfileBtn" style="display: none;">حفظ التغييرات</button>
+                <button type="button" class="profile-btn profile-btn-outline" onclick="cancelProfileEdit()" id="cancelProfileBtn" style="display: none;">إلغاء</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="notification" class="profile-notification">
+        <span id="notificationText"></span>
+    </div>
+</main>
+
+<script>
+    let originalPhone = document.getElementById('profilePhone')?.value;
+
+    function enableProfileEdit() {
+        const phoneField = document.getElementById('profilePhone');
+        phoneField.readOnly = false;
+        phoneField.classList.add('editable');
+
+        document.querySelector('[onclick="enableProfileEdit()"]').style.display = 'none';
+        document.getElementById('saveProfileBtn').style.display = 'inline-flex';
+        document.getElementById('cancelProfileBtn').style.display = 'inline-flex';
+    }
+
+    function cancelProfileEdit() {
+        const phoneField = document.getElementById('profilePhone');
+        phoneField.readOnly = true;
+        phoneField.classList.remove('editable');
+        phoneField.value = originalPhone;
+
+        document.querySelector('[onclick="enableProfileEdit()"]').style.display = 'inline-flex';
+        document.getElementById('saveProfileBtn').style.display = 'none';
+        document.getElementById('cancelProfileBtn').style.display = 'none';
+    }
+
+    document.getElementById('profileForm')?.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const newPhone = document.getElementById('profilePhone').value;
+
+        fetch('/Profile/UpdatePhone', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                phoneNumber: newPhone
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                originalPhone = newPhone;
+                showNotification('تم حفظ التغييرات بنجاح', 'success');
+                cancelProfileEdit();
+            } else {
+                showNotification('فشل في حفظ التغييرات', 'error');
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            showNotification('خطأ في الاتصال بالخادم', 'error');
+        });
+    });
+
+    function showNotification(message, type = 'success') {
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
+        notificationText.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.style.display = 'block';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 4000);
+    }
+</script>

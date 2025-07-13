@@ -1,0 +1,216 @@
+﻿@{
+    ViewData["Title"] = "التقارير";
+    Layout = "~/Views/Shared/_LayoutReports.cshtml";
+}
+
+@section Styles {
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/Gruop3Style.css" />
+}
+
+<div class="container-fluid p-4">
+    <div class="allreports-page-header">
+        <h1>التقارير</h1>
+        <p>تحليلات مرئية حول الأجهزة والطلبات</p>
+    </div>
+
+    <div class="allreports-stats">
+        <div class="allreports-stat-box total">
+            <h3>34</h3>
+            <p>عدد الطلبات هذا الشهر</p>
+        </div>
+        <div class="allreports-stat-box maintenance">
+            <h3>6</h3>
+            <p>أجهزة بحاجة للصيانة</p>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <a class="allreports-custom-btn" asp-controller="Reports" asp-action="CreateCustomReport">+ تقرير مخصص</a>
+    </div>
+
+    <div class="allreports-charts-container">
+        <div class="allreports-chart-card">
+            <div class="allreports-chart-title">توزيع الأجهزة حسب الحالة</div>
+            <div class="allreports-chart-canvas-wrapper">
+                <canvas id="allReportsDeviceStatusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="allreports-chart-card">
+            <div class="allreports-chart-title">أنواع الطلبات خلال الشهر</div>
+            <div class="allreports-chart-canvas-wrapper">
+                <canvas id="allReportsRequestTypeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="allreports-chart-card">
+            <div class="allreports-chart-title">توزيع المشرفات حسب القسم</div>
+            <div class="allreports-chart-canvas-wrapper">
+                <canvas id="allReportsSupervisorsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="allreports-chart-card">
+            <div class="allreports-chart-title">توزيع الأجهزة حسب النوع</div>
+            <div class="allreports-chart-canvas-wrapper">
+                <canvas id="allReportsDeviceTypesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default font family for Chart.js
+            Chart.defaults.font.family = "'Tajawal', sans-serif";
+
+            // Initialize all charts
+            setTimeout(() => {
+                createAllReportsDeviceStatusChart();
+                createAllReportsRequestTypeChart();
+                createAllReportsSupervisorsChart();
+                createAllReportsDeviceTypesChart();
+            }, 100);
+        });
+
+        // Device Status Chart
+        function createAllReportsDeviceStatusChart() {
+            const canvas = document.getElementById('allReportsDeviceStatusChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['تشغيل', 'صيانة', 'خارج الخدمة'],
+                    datasets: [{
+                        data: [18, 6, 4],
+                        backgroundColor: ['#38a169', '#ed8936', '#e53e3e']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    family: "'Tajawal', sans-serif"
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Request Type Chart
+        function createAllReportsRequestTypeChart() {
+            const canvas = document.getElementById('allReportsRequestTypeChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['استعارات', 'زيارات', 'استشارات', 'حجوزات أجهزة'],
+                    datasets: [{
+                        data: [10, 5, 8, 11],
+                        backgroundColor: ['#667eea', '#764ba2', '#63b3ed', '#f6ad55']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    family: "'Tajawal', sans-serif"
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Supervisors Chart
+        function createAllReportsSupervisorsChart() {
+            const canvas = document.getElementById('allReportsSupervisorsChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['الهندسة', 'الذكاء الاصطناعي', 'إلكترونيات'],
+                    datasets: [{
+                        data: [5, 3, 2],
+                        backgroundColor: ['#48bb78', '#ecc94b', '#4299e1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    family: "'Tajawal', sans-serif"
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Device Types Chart
+        function createAllReportsDeviceTypesChart() {
+            const canvas = document.getElementById('allReportsDeviceTypesChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['طابعات ثلاثية الأبعاد', 'حاسبات', 'أجهزة قياس'],
+                    datasets: [{
+                        data: [6, 7, 5],
+                        backgroundColor: ['#ed64a6', '#f6ad55', '#9f7aea']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    family: "'Tajawal', sans-serif"
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+}
