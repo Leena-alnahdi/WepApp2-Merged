@@ -170,6 +170,7 @@
         font-size: 14px;
     }
 }
+
 .supervisor-overlay {
     display: none;
     position: fixed;
@@ -2045,6 +2046,7 @@ canvas {
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(0, 108, 53, 0.3);
     }
+
 body, html {
     overflow-x: hidden !important;
 }
@@ -2256,6 +2258,7 @@ button.wil-btn-primary:not(.wil-nav-link) {
     display: block !important;
     width: 100% !important;
 }
+
 .report-btn-primary:disabled {
     background: #6c757d;
     cursor: not-allowed;
@@ -2539,6 +2542,7 @@ button.wil-btn-primary:not(.wil-nav-link) {
         text-align: center;
     }
 }
+
 body {
     font-family: 'Tajawal', sans-serif;
     color: #333;
