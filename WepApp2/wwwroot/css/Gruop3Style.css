@@ -1,8 +1,51 @@
 ﻿/* supervisor.css */
+* {
+    box-sizing: border-box;
+}
 
-/* Modal Styles */
+html {
+    direction: ltr; /* شريط التمرير على اليمين */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
 
-/* أنماط الفلاتر */
+body {
+    direction: rtl; /* المحتوى عربي */
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+    overflow-x: hidden;
+}
+
+/* إصلاح التخطيط */
+.container-fluid {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    /* إجبار شريط التمرير أن يظهر في اليمين للصفحات RTL */
+    body
+
+{
+    direction: rtl;
+    overflow-y: scroll;
+    scrollbar-gutter: stable both-edges; /* لجعل مكان الشريط محفوظ دائمًا */
+}
+
+body::-webkit-scrollbar {
+    width: 8px;
+}
+
+body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #13b35e;
+    border-radius: 4px;
+}
+
+}/* أنماط الفلاتر */
 .supervisor-filters-container {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -1116,15 +1159,18 @@ canvas {
     margin-left: auto;
 }
 
-/* Page Body Styles */
 .allreports-body {
     font-family: 'Tajawal', sans-serif;
     background-color: var(--reports-bg-light);
     color: var(--reports-text-primary);
     direction: rtl;
-    min-height: 100vh;
+    /* احذف min-height: 100vh; */
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
 }
-
+}
 /* Main content wrapper */
 body {
     background-color: var(--reports-bg-light) !important;
@@ -1398,24 +1444,6 @@ body {
     margin-bottom: 20px;
 }
 
-    /* Custom Scrollbar for Fields Container */
-    .customreport-fields-container::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .customreport-fields-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-
-    .customreport-fields-container::-webkit-scrollbar-thumb {
-        background: var(--reports-primary-color);
-        border-radius: 4px;
-    }
-
-        .customreport-fields-container::-webkit-scrollbar-thumb:hover {
-            background: var(--reports-primary-dark);
-        }
 
 /* Divider line */
 .customreport-divider {
@@ -2411,20 +2439,6 @@ button.wil-btn-primary:not(.wil-nav-link) {
     background: white;
     border-radius: 6px;
 }
-
-    .fields-grid::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .fields-grid::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-
-    .fields-grid::-webkit-scrollbar-thumb {
-        background: #28a745;
-        border-radius: 4px;
-    }
 
 /* عنصر الحقل */
 .field-checkbox-item {

@@ -1,7 +1,69 @@
-﻿@model List<WepApp2.Models.RequestReportViewModel>
+﻿@using System.Reflection
 @{
     Layout = null;
     var selectedFields = ViewBag.SelectedFields as List<string> ?? new List<string>();
+    var reportType = ViewBag.ReportType as string ?? "";
+    var serviceType = ViewBag.ServiceType as string ?? "";
+
+    // دالة للحصول على قيمة خاصية من كائن ديناميكي
+    Func<dynamic, string, object> GetPropertyValue = (obj, propName) =>
+    {
+        try
+        {
+            // استبدال المسافات بشرطة سفلية للوصول للخصائص
+            var prop = propName.Replace(" ", "_");
+            Type type = obj.GetType();
+            PropertyInfo propInfo = type.GetProperty(prop);
+            if (propInfo != null)
+                return propInfo.GetValue(obj, null);
+            return "غير محدد";
+        }
+        catch
+        {
+            return "غير محدد";
+        }
+    };
+
+    // تحديد الحقول المراد عرضها حسب نوع التقرير
+    List<string> displayFields = new List<string>();
+
+    if (reportType == "تقرير الطلبات")
+    {
+        displayFields = new List<string> { "المستفيد", "نوع الخدمة", "الجهاز", "التاريخ", "الوقت", "المشرف المسند", "الحالة" };
+    }
+    else if (reportType == "تقرير الأجهزة")
+    {
+        displayFields = new List<string> { "اسم الجهاز", "النوع", "الموقع", "الشركة", "الطراز", "تاريخ آخر صيانة", "الحالة" };
+    }
+    else if (reportType == "تقرير المستخدمين")
+    {
+        displayFields = new List<string> { "الاسم", "اسم المستخدم", "نوع المستخدم", "الجهة", "القسم", "البريد الإلكتروني", "رقم الجوال" };
+    }
+    else if (reportType == "تقرير الخدمات")
+    {
+        // تحديد الحقول حسب نوع الخدمة
+        if (serviceType == "الدورات التدريبية")
+        {
+            displayFields = new List<string> { "نوع الخدمة", "اسم الدورة", "مجال الدورة", "مقدم الدورة", "المقاعد", "الوقت", "الحالة" };
+        }
+        else if (serviceType == "إعارة الأجهزة")
+        {
+            displayFields = new List<string> { "نوع الخدمة", "اسم الجهاز", "المدة", "مقدم الطلب", "حالة الطلب", "تاريخ الطلب" };
+        }
+        else if (serviceType == "حجز الأجهزة")
+        {
+            displayFields = new List<string> { "اسم الجهاز", "اسم الشخص", "تاريخ الحجز", "الوقت", "الحالة" };
+        }
+        else
+        {
+            displayFields = new List<string> { "نوع الخدمة", "وصف الخدمة", "تاريخ الطلب", "المستخدم", "الحالة" };
+        }
+    }
+
+    // فلترة الحقول المطلوبة فقط
+    var fieldsToDisplay = selectedFields.Count > 0
+        ? displayFields.Where(f => selectedFields.Contains(f)).ToList()
+        : displayFields;
 }
 
 <!DOCTYPE html>
@@ -36,6 +98,12 @@
             margin-bottom: 10px;
         }
 
+        .service-type {
+            font-size: 16px;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
         .report-meta {
             text-align: center;
             font-size: 14px;
@@ -58,7 +126,7 @@
             }
 
             .report-table th {
-                background-color: #eaf5ea;
+                background-color: @(reportType == "تقرير الأجهزة" ? "#e8f5e9" : reportType == "تقرير المستخدمين" ? "#e3f2fd" : reportType == "تقرير الخدمات" ? "#fff3cd" : "#eaf5ea");
                 font-weight: bold;
                 color: #2c3e50;
             }
@@ -100,6 +168,54 @@
             background-color: #95a5a6;
         }
 
+        .status-active {
+            background-color: #27ae60;
+        }
+
+        .status-maintenance {
+            background-color: #f39c12;
+        }
+
+        .status-inactive {
+            background-color: #e74c3c;
+        }
+
+        .user-type-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .type-admin {
+            background-color: #e74c3c;
+        }
+
+        .type-faculty {
+            background-color: #3498db;
+        }
+
+        .type-student {
+            background-color: #27ae60;
+        }
+
+        .email-link {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+            .email-link:hover {
+                text-decoration: underline;
+            }
+
+        .phone-number {
+            direction: ltr;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
         .report-footer {
             margin-top: 30px;
             font-size: 12px;
@@ -133,6 +249,11 @@
             body {
                 margin: 20px;
             }
+
+            .email-link {
+                color: black !important;
+                text-decoration: none !important;
+            }
         }
     </style>
 </head>
@@ -140,6 +261,10 @@
     <div class="report-header">
         <h1 class="report-title">@ViewBag.ReportTitle</h1>
         <h2 class="report-subtitle">@ViewBag.ReportType</h2>
+        @if (!string.IsNullOrEmpty(serviceType) && reportType == "تقرير الخدمات")
+        {
+            <div class="service-type">نوع الخدمة: @serviceType</div>
+        }
         <div class="report-meta">
             @if (ViewBag.FromDate != null && ViewBag.ToDate != null)
             {
@@ -148,102 +273,114 @@
         </div>
     </div>
 
-    <table class="report-table">
-        <thead>
-            <tr>
-                @if (selectedFields.Count == 0 || selectedFields.Contains("المستفيد"))
-                {
-                    <th>المستفيد</th>
-                }
-                @if (selectedFields.Count == 0 || selectedFields.Contains("نوع الخدمة"))
-                {
-                    <th>نوع الخدمة</th>
-                }
-                @if (selectedFields.Count == 0 || selectedFields.Contains("الجهاز"))
-                {
-                    <th>الجهاز</th>
-                }
-                @if (selectedFields.Count == 0 || selectedFields.Contains("التاريخ"))
-                {
-                    <th>التاريخ</th>
-                }
-                @if (selectedFields.Count == 0 || selectedFields.Contains("الوقت"))
-                {
-                    <th>الوقت</th>
-                }
-                @if (selectedFields.Count == 0 || selectedFields.Contains("المشرف المسند"))
-                {
-                    <th>المشرف المسند</th>
-                }
-                @if (selectedFields.Count == 0 || selectedFields.Contains("الحالة"))
-                {
-                    <th>الحالة</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+    @if (Model != null && ((IEnumerable<dynamic>)Model).Count() > 0)
+    {
+        <table class="report-table">
+            <thead>
                 <tr>
-                    @if (selectedFields.Count == 0 || selectedFields.Contains("المستفيد"))
+                    @foreach (var field in fieldsToDisplay)
                     {
-                        <td>@item.المستفيد</td>
-                    }
-                    @if (selectedFields.Count == 0 || selectedFields.Contains("نوع الخدمة"))
-                    {
-                        <td>@item.نوع_الخدمة</td>
-                    }
-                    @if (selectedFields.Count == 0 || selectedFields.Contains("الجهاز"))
-                    {
-                        <td>@item.الجهاز</td>
-                    }
-                    @if (selectedFields.Count == 0 || selectedFields.Contains("التاريخ"))
-                    {
-                        <td>@item.التاريخ</td>
-                    }
-                    @if (selectedFields.Count == 0 || selectedFields.Contains("الوقت"))
-                    {
-                        <td>@item.الوقت</td>
-                    }
-                    @if (selectedFields.Count == 0 || selectedFields.Contains("المشرف المسند"))
-                    {
-                        <td>@item.المشرف_المسند</td>
-                    }
-                    @if (selectedFields.Count == 0 || selectedFields.Contains("الحالة"))
-                    {
-                        <td>
-                            @{
-                                string statusClass = "";
-                                switch (item.الحالة)
-                                {
-                                    case "جديد":
-                                        statusClass = "status-new";
-                                        break;
-                                    case "مسند":
-                                        statusClass = "status-assigned";
-                                        break;
-                                    case "موافق عليه":
-                                    case "موافق من المشرف":
-                                        statusClass = "status-approved";
-                                        break;
-                                    case "مرفوض من المشرف":
-                                        statusClass = "status-rejected";
-                                        break;
-                                    case "منتهي":
-                                        statusClass = "status-completed";
-                                        break;
-                                    default:
-                                        statusClass = "";
-                                        break;
-                                }
-                            }
-                            <span class="status-badge @statusClass">@item.الحالة</span>
-                        </td>
+                        <th>@field</th>
                     }
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        @foreach (var field in fieldsToDisplay)
+                        {
+                            <td>
+                                @{
+                                    var value = GetPropertyValue(item, field);
+                                    string displayValue = value?.ToString() ?? "غير محدد";
+
+                                    // معالجة خاصة لبعض الحقول
+                                    if (field == "الحالة" || field == "حالة الطلب")
+                                    {
+                                        string statusClass = "";
+                                        switch (displayValue)
+                                        {
+                                            case "جديد":
+                                                statusClass = "status-new";
+                                                break;
+                                            case "مسند":
+                                                statusClass = "status-assigned";
+                                                break;
+                                            case "موافق عليه":
+                                            case "موافق من المشرف":
+                                                statusClass = "status-approved";
+                                                break;
+                                            case "مرفوض من المشرف":
+                                                statusClass = "status-rejected";
+                                                break;
+                                            case "مرفوض":
+                                                statusClass = "status-rejected";
+                                                break;
+                                            case "منتهي":
+                                                statusClass = "status-completed";
+                                                break;
+                                            case "نشط":
+                                            case "تشغيل":
+                                                statusClass = "status-active";
+                                                break;
+                                            case "تحت الصيانة":
+                                            case "صيانة":
+                                                statusClass = "status-maintenance";
+                                                break;
+                                            case "غير عاملة":
+                                            case "خارج الخدمة":
+                                                statusClass = "status-inactive";
+                                                break;
+                                        }
+                                        <span class="status-badge @statusClass">@displayValue</span>
+                                    }
+                                    // else if (field == "نوع المستخدم")
+                                    // {
+                                    //     string typeClass = "";
+                                    //     switch (displayValue)
+                                    //     {
+                                    //         case "مشرف":
+                                    //             typeClass = "type-admin";
+                                    //             break;
+                                    //         case "عضو هيئة تدريس":
+                                    //             typeClass = "type-faculty";
+                                    //             break;
+                                    //         case "طالب":
+                                    //             typeClass = "type-student";
+                                    //             break;
+                                    //         default :
+                                    //             typeClass = "type-student";
+                                    //             break;
+                                    //     }
+                                    // <span class="user-type-badge @typeClass">@displayValue</span>
+                                    // }
+                                    else if (field == "البريد الإلكتروني" && displayValue != "غير محدد")
+                                    {
+                                        <a href="mailto:@displayValue" class="email-link">@displayValue</a>
+                                    }
+                                    else if (field == "رقم الجوال")
+                                    {
+                                        <span class="phone-number">@displayValue</span>
+                                    }
+                                    else
+                                    {
+                                        @displayValue
+                                    }
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p style="text-align: center; margin-top: 50px; font-size: 18px; color: #7f8c8d;">
+            لا توجد بيانات للعرض في هذا التقرير
+        </p>
+    }
 
     <div class="report-footer">
         <p>تم إنشاء هذا التقرير بواسطة نظام تقارير معمل الابتكارات - @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</p>

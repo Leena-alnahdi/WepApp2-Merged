@@ -26,11 +26,14 @@ namespace WepApp2.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateCustomReport(CustomReportViewModel model)
+        public IActionResult CreateCustomReport(string reportTitle, string reportType, DateTime? fromDate, DateTime? toDate, string requestStatus, string deviceStatus, string userType, string serviceType, List<string> fields)
         {
             try
             {
-                if (model.ReportType == "تقرير الطلبات")
+                // إضافة معلومات إضافية للـ ViewBag
+                ViewBag.ServiceType = serviceType;
+
+                if (reportType == "تقرير الطلبات")
                 {
                     // جلب البيانات من قاعدة البيانات
                     var requestsQuery = _context.Requests
@@ -40,21 +43,21 @@ namespace WepApp2.Controllers
                         .AsQueryable();
 
                     // تطبيق فلتر التاريخ إذا تم تحديده
-                    if (model.FromDate.HasValue)
+                    if (fromDate.HasValue)
                     {
-                        requestsQuery = requestsQuery.Where(r => r.RequestDate >= model.FromDate.Value);
+                        requestsQuery = requestsQuery.Where(r => r.RequestDate >= fromDate.Value);
                     }
-                    if (model.ToDate.HasValue)
+                    if (toDate.HasValue)
                     {
-                        requestsQuery = requestsQuery.Where(r => r.RequestDate <= model.ToDate.Value);
+                        requestsQuery = requestsQuery.Where(r => r.RequestDate <= toDate.Value);
                     }
 
                     // تطبيق فلتر حالة الطلب إذا تم تحديده
-                    if (!string.IsNullOrEmpty(model.RequestStatus))
+                    if (!string.IsNullOrEmpty(requestStatus))
                     {
                         requestsQuery = requestsQuery.Where(r =>
-                            r.AdminStatus == model.RequestStatus ||
-                            r.SupervisorStatus == model.RequestStatus);
+                            r.AdminStatus == requestStatus ||
+                            r.SupervisorStatus == requestStatus);
                     }
 
                     var requests = requestsQuery.ToList();
@@ -65,8 +68,8 @@ namespace WepApp2.Controllers
                         .Where(u => supervisorIds.Contains(u.UserId))
                         .ToDictionary(u => u.UserId, u => u.FirstName + " " + u.LastName);
 
-                    // تحويل البيانات إلى ViewModel للعرض
-                    var reportData = requests.Select(r => new RequestReportViewModel
+                    // تحويل البيانات إلى كائن ديناميكي للعرض
+                    var reportData = requests.Select(r => new
                     {
                         Id = r.RequestId,
                         المستفيد = GetUserFullName(r.User),
@@ -80,87 +83,138 @@ namespace WepApp2.Controllers
                         الحالة = GetRequestStatus(r)
                     }).ToList();
 
-                    ViewBag.ReportTitle = model.ReportTitle;
-                    ViewBag.ReportType = model.ReportType;
-                    ViewBag.FromDate = model.FromDate?.ToString("yyyy-MM-dd");
-                    ViewBag.ToDate = model.ToDate?.ToString("yyyy-MM-dd");
-                    ViewBag.SelectedFields = model.Fields ?? new List<string>();
+                    ViewBag.ReportTitle = reportTitle;
+                    ViewBag.ReportType = reportType;
+                    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                    ViewBag.SelectedFields = fields ?? new List<string>();
 
                     return View("PrintReport", reportData);
                 }
-                else if (model.ReportType == "تقرير الأجهزة")
+                else if (reportType == "تقرير الأجهزة")
                 {
                     // جلب بيانات الأجهزة من قاعدة البيانات
                     var devicesQuery = _context.Devices.AsQueryable();
 
                     // تطبيق فلتر حالة الجهاز إذا تم تحديده
-                    if (!string.IsNullOrEmpty(model.DeviceStatus))
+                    if (!string.IsNullOrEmpty(deviceStatus))
                     {
-                        devicesQuery = devicesQuery.Where(d => d.DeviceStatus == model.DeviceStatus);
+                        devicesQuery = devicesQuery.Where(d => d.DeviceStatus == deviceStatus);
                     }
 
                     var devices = devicesQuery.ToList();
 
-                    // تحويل البيانات إلى DeviceReportViewModel
-                    var deviceData = devices.Select(d => new DeviceReportViewModel
+                    // تحويل البيانات إلى كائن ديناميكي - استخدام أسماء عربية لتتوافق مع PrintReport.cshtml
+                    var deviceData = devices.Select(d => new
                     {
                         Id = d.DeviceId,
-                        DeviceName = d.DeviceName,
-                        DeviceType = d.DeviceType,
-                        Status = d.DeviceStatus
+                        اسم_الجهاز = d.DeviceName,
+                        النوع = d.DeviceType,
+                        الموقع = d.DeviceLocation ?? "غير محدد",
+                        الشركة = d.BrandName ?? "غير محدد",
+                        الطراز = d.DeviceModel ?? "غير محدد",
+                        تاريخ_آخر_صيانة = d.LastMaintenance?.ToString("yyyy-MM-dd") ?? "غير محدد",
+                        الحالة = d.DeviceStatus
                     }).ToList();
 
-                    ViewBag.ReportTitle = model.ReportTitle;
-                    ViewBag.ReportType = model.ReportType;
-                    ViewBag.FromDate = model.FromDate?.ToString("yyyy-MM-dd");
-                    ViewBag.ToDate = model.ToDate?.ToString("yyyy-MM-dd");
+                    ViewBag.ReportTitle = reportTitle;
+                    ViewBag.ReportType = reportType;
+                    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                    ViewBag.SelectedFields = fields ?? new List<string>();
 
                     return View("PrintReport", deviceData);
                 }
-                else if (model.ReportType == "تقرير المستخدمين")
+                else if (reportType == "تقرير المستخدمين")
                 {
                     // جلب بيانات المستخدمين من قاعدة البيانات
                     var usersQuery = _context.Users.AsQueryable();
 
                     // تطبيق فلتر نوع المستخدم إذا تم تحديده
-                    if (!string.IsNullOrEmpty(model.UserType))
+                    if (!string.IsNullOrEmpty(userType))
                     {
-                        usersQuery = usersQuery.Where(u => u.UserRole == model.UserType);
+                        usersQuery = usersQuery.Where(u => u.UserRole == userType);
                     }
 
                     var users = usersQuery.ToList();
 
-                    // تحويل البيانات إلى UserReportViewModel
-                    var userData = users.Select(u => new UserReportViewModel
+                    // تحويل البيانات إلى كائن ديناميكي مع أسماء عربية
+                    var userData = users.Select(u => new
                     {
                         Id = u.UserId,
-                        Name = u.FirstName + " " + u.LastName,
-                        Username = u.UserName,
-                        UserType = u.UserRole,
-                        Email = u.Email,
-                        Phone = u.PhoneNumber,
-                        Status = u.IsActive ? "نشط" : "غير نشط"
+                        الاسم = u.FirstName + " " + u.LastName,
+                        اسم_المستخدم = u.UserName,
+                        نوع_المستخدم = u.UserRole,
+                        الجهة = u.Faculty ?? "غير محدد",
+                        القسم = u.Department ?? "غير محدد",
+                        البريد_الإلكتروني = u.Email,
+                        رقم_الجوال = u.PhoneNumber
                     }).ToList();
 
-                    ViewBag.ReportTitle = model.ReportTitle;
-                    ViewBag.ReportType = model.ReportType;
-                    ViewBag.FromDate = model.FromDate?.ToString("yyyy-MM-dd");
-                    ViewBag.ToDate = model.ToDate?.ToString("yyyy-MM-dd");
-                    ViewBag.SelectedFields = model.Fields ?? new List<string>();
+                    ViewBag.ReportTitle = reportTitle;
+                    ViewBag.ReportType = reportType;
+                    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                    ViewBag.SelectedFields = fields ?? new List<string>();
 
-                    return View("PrintUserReport", userData);
+                    return View("PrintReport", userData);
+                }
+                else if (reportType == "تقرير الخدمات")
+                {
+                    // تقرير الخدمات بناءً على نوع الخدمة المحدد
+                    var servicesQuery = _context.Requests
+                        .Include(r => r.User)
+                        .Include(r => r.Service)
+                        .Include(r => r.Device)
+                        .AsQueryable();
+
+                    // تطبيق فلتر نوع الخدمة
+                    if (!string.IsNullOrEmpty(serviceType))
+                    {
+                        servicesQuery = servicesQuery.Where(r => r.RequestType == serviceType ||
+                            (r.Service != null && r.Service.ServiceName == serviceType));
+                    }
+
+                    // تطبيق فلتر التاريخ
+                    if (fromDate.HasValue)
+                    {
+                        servicesQuery = servicesQuery.Where(r => r.RequestDate >= fromDate.Value);
+                    }
+                    if (toDate.HasValue)
+                    {
+                        servicesQuery = servicesQuery.Where(r => r.RequestDate <= toDate.Value);
+                    }
+
+                    var services = servicesQuery.ToList();
+
+                    // تحويل البيانات حسب نوع الخدمة
+                    var serviceData = services.Select(r => new
+                    {
+                        نوع_الخدمة = GetServiceName(r),
+                        وصف_الخدمة = r.RequestType ?? "غير محدد",
+                        تاريخ_الطلب = r.RequestDate.ToString("yyyy-MM-dd"),
+                        المستخدم = GetUserFullName(r.User),
+                        الحالة = GetRequestStatus(r)
+                    }).ToList();
+
+                    ViewBag.ReportTitle = reportTitle;
+                    ViewBag.ReportType = reportType;
+                    ViewBag.ServiceType = serviceType;
+                    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                    ViewBag.SelectedFields = fields ?? new List<string>();
+
+                    return View("PrintReport", serviceData);
                 }
                 else
                 {
-                    // للتقارير الأخرى - تقرير الخدمات
-                    // يمكنك إضافة الكود هنا لاحقاً
+                    // للتقارير الأخرى
+                    ViewBag.ReportTitle = reportTitle;
+                    ViewBag.ReportType = reportType;
+                    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
 
-                    ViewBag.ReportTitle = model.ReportTitle;
-                    ViewBag.ReportType = model.ReportType;
-                    ViewBag.FromDate = model.FromDate?.ToString("yyyy-MM-dd");
-                    ViewBag.ToDate = model.ToDate?.ToString("yyyy-MM-dd");
-
-                    return View("PrintReport", new List<DeviceReportViewModel>());
+                    return View("PrintReport", new List<object>());
                 }
             }
             catch (Exception ex)
@@ -207,27 +261,6 @@ namespace WepApp2.Controllers
         public IActionResult PrintReport()
         {
             return View();
-        }
-
-        // Action method للإستعلام القديم (نتركه كما هو)
-        [HttpPost]
-        public IActionResult GenerateCustomReport(string ReportTitle, string ReportType, DateTime FromDate, DateTime ToDate, List<string> SelectedFields)
-        {
-            var fakeData = new List<DeviceReportViewModel>
-            {
-                new DeviceReportViewModel { Id = 1, DeviceName = "طابعة ثلاثية الأبعاد - 001", DeviceType = "طابعة ثلاثية الأبعاد", Status = "تشغيل" },
-                new DeviceReportViewModel { Id = 2, DeviceName = "حاسوب محمول - 002", DeviceType = "حاسبات", Status = "صيانة" },
-                new DeviceReportViewModel { Id = 3, DeviceName = "جهاز قياس - 003", DeviceType = "أجهزة قياس", Status = "تشغيل" },
-                new DeviceReportViewModel { Id = 4, DeviceName = "طابعة ثلاثية الأبعاد - 004", DeviceType = "طابعة ثلاثية الأبعاد", Status = "خارج الخدمة" },
-                new DeviceReportViewModel { Id = 5, DeviceName = "حاسوب مكتبي - 005", DeviceType = "حاسبات", Status = "تشغيل" }
-            };
-
-            ViewBag.ReportTitle = ReportTitle;
-            ViewBag.ReportType = ReportType;
-            ViewBag.FromDate = FromDate.ToString("yyyy-MM-dd");
-            ViewBag.ToDate = ToDate.ToString("yyyy-MM-dd");
-
-            return View("PrintReport", fakeData);
         }
     }
 }
