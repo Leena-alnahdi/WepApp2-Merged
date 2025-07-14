@@ -1,6 +1,17 @@
 ﻿@model WepApp2.Models.User
 @{
-    Layout = "~/Views/Shared/_LayoutSupervisor.cshtml";
+    string layoutPath = null;
+
+    if (Model.UserRole == "Admin")
+    {
+        layoutPath = "~/Views/Shared/_LayoutReports.cshtml";
+    }
+    else if (Model.UserRole == "Supervisor")
+    {
+        layoutPath = "~/Views/Shared/_LayoutSupervisor.cshtml";
+    }
+
+    Layout = layoutPath;
     ViewBag.Title = "البيانات الشخصية";
 }
 
@@ -36,7 +47,7 @@
             </div>
             <div class="profile-form-row">
                 <div class="profile-form-group">
-                    <label for="profileCollege">الكلية:</label>
+                    <label for="profileCollege">الجهة:</label>
                     <input type="text" id="profileCollege" value="@Model.Faculty" readonly class="form-control" />
                 </div>
                 <div class="profile-form-group">
