@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+//-----00
 namespace WepApp2.Models;
 
 public partial class Request
 {
-    public int RequestId { get; set; }
+    public int RequestID { get; set; }
 
     public string RequestType { get; set; } = null!;
 

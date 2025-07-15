@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+
+
 
 namespace WepApp2.Models;
 
 public partial class BookingDevice
 {
-    public int BookingDeviceId { get; set; }
+
+    [Key]
+    public int BookingDeviceID { get; set; }
 
     public string ProjectName { get; set; } = null!;
 

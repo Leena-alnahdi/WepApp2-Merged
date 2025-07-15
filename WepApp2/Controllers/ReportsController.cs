@@ -65,13 +65,13 @@ namespace WepApp2.Controllers
                     // جلب جميع المشرفين مرة واحدة لتحسين الأداء
                     var supervisorIds = requests.Select(r => r.SupervisorAssigned).Distinct().ToList();
                     var supervisors = _context.Users
-                        .Where(u => supervisorIds.Contains(u.UserId))
-                        .ToDictionary(u => u.UserId, u => u.FirstName + " " + u.LastName);
+                        .Where(u => supervisorIds.Contains(u.UserID))
+                        .ToDictionary(u => u.UserID, u => u.FirstName + " " + u.LastName);
 
                     // تحويل البيانات إلى كائن ديناميكي للعرض
                     var reportData = requests.Select(r => new
                     {
-                        Id = r.RequestId,
+                        Id = r.RequestID,
                         المستفيد = GetUserFullName(r.User),
                         نوع_الخدمة = GetServiceName(r),
                         الجهاز = r.Device?.DeviceName ?? "لا يوجد",
@@ -107,7 +107,7 @@ namespace WepApp2.Controllers
                     // تحويل البيانات إلى كائن ديناميكي - استخدام أسماء عربية لتتوافق مع PrintReport.cshtml
                     var deviceData = devices.Select(d => new
                     {
-                        Id = d.DeviceId,
+                        Id = d.DeviceID,
                         اسم_الجهاز = d.DeviceName,
                         الموقع = d.DeviceLocation ?? "غير محدد",
                         الشركة = d.BrandName ?? "غير محدد",
@@ -140,7 +140,7 @@ namespace WepApp2.Controllers
                     // تحويل البيانات إلى كائن ديناميكي مع أسماء عربية
                     var userData = users.Select(u => new
                     {
-                        Id = u.UserId,
+                        Id = u.UserID,
                         الاسم = u.FirstName + " " + u.LastName,
                         اسم_المستخدم = u.UserName,
                         نوع_المستخدم = u.UserRole,

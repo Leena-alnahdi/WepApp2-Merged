@@ -1,0 +1,200 @@
+﻿@{
+    ViewBag.Title = "تعديل بيانات المستخدم";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@*
+---------------------------------------------------------------
+الصفحة: تعديل بيانات المستخدم (Edit User)
+الوصف: نموذج لتحديث معلومات مستخدم موجود في النظام
+Page: Edit User
+Description: Form to update existing user information in the system
+---------------------------------------------------------------
+*@
+
+@model WepApp2.Models.User
+
+
+
+<!-- حاوية الصفحة -->
+<!-- Main container -->
+<div class="container">
+    <h2 class="mb-4">تعديل بيانات المستخدم</h2>
+
+    <!-- نموذج تعديل المستخدم -->
+    <!-- Edit user form -->
+    @using (Html.BeginForm("EditUser", "Users", FormMethod.Post))
+    {
+        @Html.HiddenFor(m => m.UserID)
+
+        <!-- الاسم الأول واسم العائلة -->
+        <!-- First and last name -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label>الاسم الأول</label>
+                @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.FirstName)
+            </div>
+            <div class="col-md-6">
+                <label>اسم العائلة</label>
+                @Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.LastName)
+            </div>
+        </div>
+
+        <!-- البريد الإلكتروني واسم المستخدم -->
+        <!-- Email and username -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label>البريد الإلكتروني</label>
+                @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.Email)
+            </div>
+
+            <div class="col-md-6">
+                <label>اسم المستخدم</label>
+                @Html.TextBoxFor(m => m.UserName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.UserName)
+            </div>
+        </div>
+
+        <div class="row mb-3">
+
+            <!-- رقم الجوال والنوع -->
+            <!-- Phone number and user role -->
+            <div class="col-md-6">
+                <label>رقم الجوال</label>
+                @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.PhoneNumber)
+            </div>
+
+            <div class="col-md-6">
+                <label>النوع</label>
+                @Html.DropDownListFor(m => m.UserRole, new SelectList(new[] { "مشرف", "طالب", "عضو هيئة تدريس", "مدير بديل" }), "اختر النوع", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.UserRole)
+            </div>
+        </div>
+
+        <!-- الجهة والقسم -->
+        <!-- Faculty and department -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label>الجهة (الكلية)</label>
+                @Html.DropDownListFor(m => m.Faculty, new SelectList(ViewBag.Faculties as List<string>, Model.Faculty), "اختر الجهة", new { @id = "collegeSelectEdit", @class = "form-select" })
+
+                <!-- إدخال يدوي إذا تم اختيار "أخرى" -->
+                <!-- Manual input if "Other" is selected -->
+                <input type="text" name="OtherFaculty" id="otherFacultyInputEdit" class="form-control mt-2"
+                       placeholder="اكتب اسم الجهة"
+                       value="@Model.OtherFaculty"
+                       style="display:@(Model.Faculty == "أخرى" ? "block" : "none");" />
+                @Html.ValidationMessageFor(m => m.Faculty)
+            </div>
+
+
+
+
+
+            <div class="col-md-6">
+                <label>القسم</label>
+                @Html.TextBoxFor(m => m.Department, new { @class = "form-control", placeholder = "اكتب اسم القسم" })
+                @Html.ValidationMessageFor(m => m.Department)
+            </div>
+
+
+
+
+
+        </div>
+
+        <!-- كلمة المرور والحالة -->
+        <!-- Password and user status -->
+        <div class="row mb-3">
+
+            <div class="col-md-6">
+                <label>كلمة المرور</label>
+                <div class="input-group">
+                    @Html.PasswordFor(m => m.UserPassWord, new { @class = "form-control", @id = "editPasswordInput" })
+                    <button class="btn btn-outline-secondary" type="button" id="toggleEditPassword">
+                        <i class="bi bi-eye" id="editPasswordIcon"></i>
+                    </button>
+                </div>
+
+                @Html.ValidationMessageFor(m => m.UserPassWord)
+            </div>
+
+            <!-- تحديد إذا كان المستخدم نشط -->
+            <!-- Checkbox to mark user as active -->
+            <div class="col-md-6 d-flex align-items-center">
+                <div class="form-check mt-4">
+                    @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input", id = "isActiveEdit" })
+                    <label class="form-check-label" for="isActiveEdit">نشط</label>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- أزرار الحفظ والعودة -->
+        <!-- Save and back buttons -->
+        <button type="submit" class="btn btn-success">حفظ التعديلات</button>
+        <a href="@Url.Action("Users", "Users")" class="btn btn-secondary">↩ العودة</a>
+    }
+
+</div>
+
+<!-- تضمين تنسيقات CSS -->
+<!-- Include custom CSS file -->
+@section Styles {
+    <link href="~/css/Group1Style.css" rel="stylesheet" />
+}
+
+<!-- سكريبتات JavaScript -->
+<!-- JavaScript section -->
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const collegeSelect = document.getElementById("collegeSelectEdit");
+            const otherFacultyInput = document.getElementById("otherFacultyInputEdit");
+
+            if (collegeSelect && otherFacultyInput) {
+
+                // ✅ إظهار خانة "أخرى" إذا كانت مختارة مسبقًا
+                // Show "Other" field if previously selected
+                if (collegeSelect.value === "أخرى") {
+                    otherFacultyInput.style.display = "block";
+                } else {
+                    otherFacultyInput.style.display = "none";
+                }
+
+                // ✅ إظهار/إخفاء خانة "أخرى" عند تغيير الاختيار
+                // Toggle "Other" input visibility on selection change
+                collegeSelect.addEventListener("change", function () {
+                    if (collegeSelect.value === "أخرى") {
+                        otherFacultyInput.style.display = "block";
+                    } else {
+                        otherFacultyInput.style.display = "none";
+                        otherFacultyInput.value = ""
+                    }
+                });
+            }
+
+            // 👁️ تبديل إظهار كلمة المرور
+            // Toggle password visibility
+            const toggleBtn = document.getElementById("toggleEditPassword");
+            const passwordInput = document.getElementById("editPasswordInput");
+            const icon = document.getElementById("editPasswordIcon");
+
+            if (toggleBtn && passwordInput && icon) {
+                toggleBtn.addEventListener("click", function () {
+                    const isPassword = passwordInput.type === "password";
+                    passwordInput.type = isPassword ? "text" : "password";
+                    icon.className = isPassword ? "bi bi-eye-slash" : "bi bi-eye";
+                });
+            }
+        });
+    </script>
+
+    <!-- سكريبت مخصص لإدارة المستخدمين -->
+    <!-- Custom script for user features -->
+    <script src="~/js/userscript.js"></script>
+}

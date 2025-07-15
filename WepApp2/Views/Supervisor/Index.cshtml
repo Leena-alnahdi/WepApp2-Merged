@@ -62,7 +62,7 @@
 
             {
                 <tr>
-                    <td>@request.RequestId</td>
+                    <td>@request.RequestID</td>
                     <td>@request.RequestType</td>
                     <td>@request.User?.UserName</td>
                     <td>@request.RequestDate.ToString("yyyy-MM-dd")</td>
@@ -75,14 +75,14 @@
                             }
                             else
                             {
-                                <button type="button" class="supervisor-approve-btn btn btn-success" data-request-id="@request.RequestId">موافقة</button>
-                                <button type="button" class="supervisor-reject-btn btn btn-danger" data-request-id="@request.RequestId">رفض</button>
+                                <button type="button" class="supervisor-approve-btn btn btn-success" data-request-id="@request.RequestID">موافقة</button>
+                                <button type="button" class="supervisor-reject-btn btn btn-danger" data-request-id="@request.RequestID">رفض</button>
                             }
                         </div>
                     </td>
                     <td>
                         <button type="button" class="supervisor-view-details-btn btn btn-outline-success"
-                                data-request-id="@request.RequestId"
+                                data-request-id="@request.RequestID"
                                 data-request-type="@request.RequestType"
                                 data-user-name="@request.User?.UserName"
                                 data-request-date="@request.RequestDate.ToString("yyyy-MM-dd")"

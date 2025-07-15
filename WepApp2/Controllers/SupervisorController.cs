@@ -39,7 +39,7 @@ namespace WepApp2.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult UpdateStatus([FromBody] UpdateStatusRequest request)
         {
-            var req = _context.Requests.FirstOrDefault(r => r.RequestId == request.RequestId);
+            var req = _context.Requests.FirstOrDefault(r => r.RequestID == request.RequestId);
             if (req != null)
             {
                 req.SupervisorStatus = request.Status;
@@ -59,7 +59,7 @@ namespace WepApp2.Controllers
             var request = _context.Requests
                                   .Include(r => r.LabVisits)
                                   .ThenInclude(lv => lv.VisitDetails)
-                                  .FirstOrDefault(r => r.RequestId == id);
+                                  .FirstOrDefault(r => r.RequestID == id);
 
             if (request == null || request.RequestType != "زيارة معمل")
             {
@@ -74,13 +74,13 @@ namespace WepApp2.Controllers
         public IActionResult GetCourseName(int id)
         {
             // نجيب الطلب أولًا
-            var request = _context.Requests.FirstOrDefault(r => r.RequestId == id);
+            var request = _context.Requests.FirstOrDefault(r => r.RequestID == id);
 
             if (request == null || request.CourseID == null)
                 return Json(new { courseName = "غير متاح" });
 
             // نجيب الدورة المرتبطة بـ CourseId الموجود في الطلب
-            var course = _context.Courses.FirstOrDefault(c => c.CourseId == request.CourseID);
+            var course = _context.Courses.FirstOrDefault(c => c.CourseID == request.CourseID);
 
             if (course != null)
             {

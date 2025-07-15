@@ -45,7 +45,7 @@ namespace WepApp2.Controllers
                     new Claim(ClaimTypes.Role, existingUser.UserRole ?? "Student"),
                     new Claim("FirstName", existingUser.FirstName ?? "")  // ✅ هنا نضيف الاسم الأول
                     ,
-            new Claim("UserId", existingUser.UserId.ToString()) // <-- هنا أضفنا الـ UserId
+            new Claim("UserID", existingUser.UserID.ToString()) // <-- هنا أضفنا الـ UserId
                 };
 
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

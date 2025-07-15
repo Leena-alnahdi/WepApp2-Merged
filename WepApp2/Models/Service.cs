@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+//----00
 namespace WepApp2.Models;
 
 public partial class Service
 {
-    public int ServiceId { get; set; }
+    public int ServiceID { get; set; }
 
     public string ServiceName { get; set; } = null!;
 
