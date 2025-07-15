@@ -55,10 +55,10 @@ namespace WepApp2.Controllers
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                 // التوجيه حسب الدور
-                if (existingUser.UserRole == "Admin")
+                if (existingUser.UserRole == "مدير")
                     return RedirectToAction("AllReports", "Reports");
 
-                if (existingUser.UserRole == "Supervisor")
+                if (existingUser.UserRole == "مشرف")
                     return RedirectToAction("Index", "Supervisor");
 
                 return RedirectToAction("HomePage", "Auth");
