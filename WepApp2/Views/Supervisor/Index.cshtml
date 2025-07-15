@@ -58,7 +58,8 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var request in Model.Where(r => r.RequestType != "دورة تدريبية"))
+            @foreach (var request in Model)
+
             {
                 <tr>
                     <td>@request.RequestId</td>
@@ -210,9 +211,19 @@
                         .catch(() => {
                             document.getElementById("detailRequestInfo").textContent = "خطأ في جلب وصف الاستشارة";
                         });
-                } else {
-                    document.getElementById("detailRequestInfo").textContent = deviceName;
-                }
+                        } else if (requestType === "دورة تدريبية") {
+            fetch(`/Supervisor/GetCourseName?id=${requestId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("detailRequestInfo").textContent = data.courseName;
+                })
+                .catch(() => {
+                    document.getElementById("detailRequestInfo").textContent = "خطأ في جلب اسم الدورة";
+                });
+        }
+        else {
+            document.getElementById("detailRequestInfo").textContent = deviceName;
+        }
 
                 document.getElementById("detailsModal").style.display = "block";
                 document.getElementById("overlay").style.display = "block";

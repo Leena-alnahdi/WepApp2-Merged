@@ -17,10 +17,21 @@ namespace WepApp2.Controllers
 
         public IActionResult Index()
         {
+            // ✅ استخراج UserId من Claims
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // ✅ جلب الطلبات المخصصة لهذا المشرف فقط
             var requests = _context.Requests
-                                   .Include(r => r.User)
-                                   .Include(r => r.Device)
-                                   .ToList();
+                .Include(r => r.User)
+                .Include(r => r.Device)
+                .Where(r => r.SupervisorAssigned == currentUserId)
+                .ToList();
+
             return View(requests);
         }
 
@@ -58,6 +69,27 @@ namespace WepApp2.Controllers
             var visitType = request.LabVisits.FirstOrDefault()?.VisitDetails?.VisitType ?? "غير متاح";
             return Json(new { visitType });
         }
+
+        [HttpGet]
+        public IActionResult GetCourseName(int id)
+        {
+            // نجيب الطلب أولًا
+            var request = _context.Requests.FirstOrDefault(r => r.RequestId == id);
+
+            if (request == null || request.CourseID == null)
+                return Json(new { courseName = "غير متاح" });
+
+            // نجيب الدورة المرتبطة بـ CourseId الموجود في الطلب
+            var course = _context.Courses.FirstOrDefault(c => c.CourseId == request.CourseID);
+
+            if (course != null)
+            {
+                return Json(new { courseName = course.CourseName });
+            }
+
+            return Json(new { courseName = "اسم الدورة غير متاح" });
+        }
+
 
         [HttpGet]
         public IActionResult GetConsultationDescription(int id)
