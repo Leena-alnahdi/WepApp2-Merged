@@ -22,7 +22,7 @@ body {
     padding-right: 15px;
     padding-left: 15px;
     margin-right: auto;
-    margin-left: auto; /*إجبار شريط التمرير أن يظهر في اليمين للصفحات RTL*/ 
+    margin-left: auto /*إجبار شريط التمرير أن يظهر في اليمين للصفحات RTL*/ 
 
     body
          {
