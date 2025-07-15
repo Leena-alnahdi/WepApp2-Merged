@@ -43,7 +43,7 @@ namespace WepApp2.Controllers
                 {
                     new Claim(ClaimTypes.Name, existingUser.UserName),
                     new Claim(ClaimTypes.Role, existingUser.UserRole ?? "Student"),
-    new Claim("FirstName", existingUser.FirstName ?? "")  // ✅ هنا نضيف الاسم الأول
+                    new Claim("FirstName", existingUser.FirstName ?? "")  // ✅ هنا نضيف الاسم الأول
                 };
 
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -53,6 +53,9 @@ namespace WepApp2.Controllers
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                 // التوجيه حسب الدور
+                if (existingUser.UserRole == "Admin")
+                    return RedirectToAction("AllReports", "Reports");
+
                 if (existingUser.UserRole == "Supervisor")
                     return RedirectToAction("Index", "Supervisor");
 
