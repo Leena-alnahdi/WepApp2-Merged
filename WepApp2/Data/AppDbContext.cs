@@ -42,7 +42,7 @@ public partial class AppDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-    => optionsBuilder.UseSqlServer("Server=LAPTOP-UBN31PE8;Database=DBGroup2;Trusted_Connection=True;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=LAPTOP-UBN31PE8;Database=DBGroup2;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,7 +50,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<BookingDevice>(entity =>
         {
-            entity.HasKey(e => e.BookingDeviceId).HasName("PK__BookingD__6263A24949EBF196");
+            entity.HasKey(e => e.BookingDeviceId).HasName("PK__BookingD__6263A24908874900");
 
             entity.Property(e => e.BookingDeviceId).HasColumnName("BookingDeviceID");
             entity.Property(e => e.Department).HasMaxLength(255);
@@ -66,7 +66,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Request).WithMany(p => p.BookingDevices)
                 .HasForeignKey(d => d.RequestId)
-                .HasConstraintName("FK_BookingDevices_Request");
+                .HasConstraintName("FK_BookingDevices_Requests");
 
             entity.HasOne(d => d.Service).WithMany(p => p.BookingDevices)
                 .HasForeignKey(d => d.ServiceId)
@@ -75,7 +75,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Consultation>(entity =>
         {
-            entity.HasKey(e => e.ConsultationId).HasName("PK__Consulta__5D014A785DB937CC");
+            entity.HasKey(e => e.ConsultationId).HasName("PK__Consulta__5D014A78858DB694");
 
             entity.Property(e => e.ConsultationId).HasColumnName("ConsultationID");
             entity.Property(e => e.ConsultationMajorId).HasColumnName("ConsultationMajorID");
@@ -86,7 +86,7 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.ConsultationMajor).WithMany(p => p.Consultations)
                 .HasForeignKey(d => d.ConsultationMajorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Consultations_ConsultationMajor");
+                .HasConstraintName("FK_Consultations_ConsultationMajors");
 
             entity.HasOne(d => d.Request).WithMany(p => p.Consultations)
                 .HasForeignKey(d => d.RequestId)
@@ -99,7 +99,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ConsultationMajor>(entity =>
         {
-            entity.HasKey(e => e.ConsultationMajorId).HasName("PK__Consulta__C757E54F7E8D3679");
+            entity.HasKey(e => e.ConsultationMajorId).HasName("PK__Consulta__C757E54FDAE44A16");
 
             entity.Property(e => e.ConsultationMajorId).HasColumnName("ConsultationMajorID");
             entity.Property(e => e.Major).HasMaxLength(255);
@@ -107,18 +107,13 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Course>(entity =>
         {
-            entity.HasKey(e => e.CourseId).HasName("PK__Courses__C92D7187C09ABD48");
+            entity.HasKey(e => e.CourseId).HasName("PK__Courses__C92D7187281C46B9");
 
             entity.Property(e => e.CourseId).HasColumnName("CourseID");
             entity.Property(e => e.CourseField).HasMaxLength(255);
             entity.Property(e => e.CourseName).HasMaxLength(255);
             entity.Property(e => e.PresenterName).HasMaxLength(255);
-            entity.Property(e => e.RequestId).HasColumnName("RequestID");
             entity.Property(e => e.ServiceId).HasColumnName("ServiceID");
-
-            entity.HasOne(d => d.Request).WithMany(p => p.Courses)
-                .HasForeignKey(d => d.RequestId)
-                .HasConstraintName("FK_Courses_Request");
 
             entity.HasOne(d => d.Service).WithMany(p => p.Courses)
                 .HasForeignKey(d => d.ServiceId)
@@ -127,7 +122,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Device>(entity =>
         {
-            entity.HasKey(e => e.DeviceId).HasName("PK__Devices__49E12331FA20AC9E");
+            entity.HasKey(e => e.DeviceId).HasName("PK__Devices__49E12331AE3549DC");
 
             entity.Property(e => e.DeviceId).HasColumnName("DeviceID");
             entity.Property(e => e.BrandName).HasMaxLength(255);
@@ -135,7 +130,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DeviceModel).HasMaxLength(255);
             entity.Property(e => e.DeviceName).HasMaxLength(255);
             entity.Property(e => e.DeviceStatus).HasMaxLength(255);
-            entity.Property(e => e.DeviceType).HasMaxLength(255);
             entity.Property(e => e.LastMaintenance).HasColumnType("datetime");
             entity.Property(e => e.LastUpdate).HasColumnType("datetime");
             entity.Property(e => e.SerialNumber).HasMaxLength(255);
@@ -153,7 +147,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<DeviceLoan>(entity =>
         {
-            entity.HasKey(e => e.DeviceLoanId).HasName("PK__DeviceLo__385CB1795F83D7B4");
+            entity.HasKey(e => e.DeviceLoanId).HasName("PK__DeviceLo__385CB179A85FB7C9");
 
             entity.Property(e => e.DeviceLoanId).HasColumnName("DeviceLoanID");
             entity.Property(e => e.DeviceId).HasColumnName("DeviceID");
@@ -167,7 +161,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Request).WithMany(p => p.DeviceLoans)
                 .HasForeignKey(d => d.RequestId)
-                .HasConstraintName("FK_DeviceLoans_Request");
+                .HasConstraintName("FK_DeviceLoans_Requests");
 
             entity.HasOne(d => d.Service).WithMany(p => p.DeviceLoans)
                 .HasForeignKey(d => d.ServiceId)
@@ -176,7 +170,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<LabVisit>(entity =>
         {
-            entity.HasKey(e => e.LabVisitId).HasName("PK__LabVisit__DDA12342C1B18E03");
+            entity.HasKey(e => e.LabVisitId).HasName("PK__LabVisit__DDA12342E18829A7");
 
             entity.Property(e => e.LabVisitId).HasColumnName("LabVisitID");
             entity.Property(e => e.NumberOfVisitors).HasDefaultValue(1);
@@ -187,7 +181,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Request).WithMany(p => p.LabVisits)
                 .HasForeignKey(d => d.RequestId)
-                .HasConstraintName("FK_LabVisits_Request");
+                .HasConstraintName("FK_LabVisits_Requests");
 
             entity.HasOne(d => d.Service).WithMany(p => p.LabVisits)
                 .HasForeignKey(d => d.ServiceId)
@@ -200,52 +194,43 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Request>(entity =>
         {
-            entity.HasKey(e => e.RequestId).HasName("PK__Requests__33A8519A677781CF");
+            entity.HasKey(e => e.RequestId).HasName("PK__Requests__33A8519A66055425");
 
             entity.Property(e => e.RequestId).HasColumnName("RequestID");
             entity.Property(e => e.AdminStatus).HasMaxLength(255);
+            entity.Property(e => e.CourseId).HasColumnName("CourseID");
             entity.Property(e => e.DeviceId).HasColumnName("DeviceID");
             entity.Property(e => e.RequestDate).HasColumnType("datetime");
             entity.Property(e => e.RequestType).HasMaxLength(255);
             entity.Property(e => e.ServiceId).HasColumnName("ServiceID");
-            entity.Property(e => e.SupervisorStatus).HasMaxLength(255);
+            entity.Property(e => e.SupervisorStatus)
+                .HasMaxLength(255)
+                .HasDefaultValue("بإنتظار إسناد المشرف");
             entity.Property(e => e.UserId).HasColumnName("UserID");
+
+            entity.HasOne(d => d.Course).WithMany(p => p.Requests)
+                .HasForeignKey(d => d.CourseId)
+                .HasConstraintName("FK_Request_Courses");
 
             entity.HasOne(d => d.Device).WithMany(p => p.Requests)
                 .HasForeignKey(d => d.DeviceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Request_Devices");
 
             entity.HasOne(d => d.Service).WithMany(p => p.Requests)
                 .HasForeignKey(d => d.ServiceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Request_Services");
 
             entity.HasOne(d => d.User).WithMany(p => p.Requests)
                 .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Request_Users");
-
-            entity.HasMany(d => d.CoursesNavigation).WithMany(p => p.Requests)
-                .UsingEntity<Dictionary<string, object>>(
-                    "CoursesRequest",
-                    r => r.HasOne<Course>().WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__CoursesRe__Cours__5AEE82B9"),
-                    l => l.HasOne<Request>().WithMany()
-                        .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__CoursesRe__Reque__59FA5E80"),
-                    j =>
-                    {
-                        j.HasKey("RequestId", "CourseId").HasName("PK__CoursesR__5F3A86825A1B9ED2");
-                        j.ToTable("CoursesRequests");
-                        j.IndexerProperty<int>("RequestId").HasColumnName("RequestID");
-                        j.IndexerProperty<int>("CourseId").HasColumnName("CourseID");
-                    });
         });
 
         modelBuilder.Entity<Service>(entity =>
         {
-            entity.HasKey(e => e.ServiceId).HasName("PK__Services__C51BB0EAB48627A7");
+            entity.HasKey(e => e.ServiceId).HasName("PK__Services__C51BB0EAF5B6E17D");
 
             entity.Property(e => e.ServiceId).HasColumnName("ServiceID");
             entity.Property(e => e.ServiceName).HasMaxLength(255);
@@ -253,7 +238,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Technology>(entity =>
         {
-            entity.HasKey(e => e.TechnologyId).HasName("PK__Technolo__70570178B6095524");
+            entity.HasKey(e => e.TechnologyId).HasName("PK__Technolo__705701783492A34E");
 
             entity.Property(e => e.TechnologyId).HasColumnName("TechnologyID");
             entity.Property(e => e.TechnologyName).HasMaxLength(255);
@@ -261,7 +246,13 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCACFFACBBB8");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCAC15D188DC");
+
+            entity.HasIndex(e => e.PhoneNumber, "UQ__Users__85FB4E38F82DB5BA").IsUnique();
+
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534374EE266").IsUnique();
+
+            entity.HasIndex(e => e.UserName, "UQ__Users__C9F2845697958F24").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.Department).HasMaxLength(255);
@@ -279,7 +270,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<VisitsDetail>(entity =>
         {
-            entity.HasKey(e => e.VisitDetailsId).HasName("PK__VisitsDe__BCA58B1371E794BB");
+            entity.HasKey(e => e.VisitDetailsId).HasName("PK__VisitsDe__BCA58B13ED325902");
 
             entity.Property(e => e.VisitDetailsId).HasColumnName("VisitDetailsID");
             entity.Property(e => e.VisitType)

@@ -70,16 +70,6 @@ namespace WepApp2.Controllers
             return Json(consultation ?? new { consultationDescription = "غير متاح" });
         }
 
-        [HttpGet]
-        public IActionResult GetCourseName(int id)
-        {
-            var course = _context.Courses
-                .Where(c => c.RequestId == id)
-                .Select(c => new { courseName = c.CourseName })
-                .FirstOrDefault();
-
-            return Json(course ?? new { courseName = "غير متاح" });
-        }
 
         public class UpdateStatusRequest
         {

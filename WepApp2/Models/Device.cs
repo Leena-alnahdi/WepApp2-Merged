@@ -9,8 +9,6 @@ public partial class Device
 
     public string DeviceName { get; set; } = null!;
 
-    public string DeviceType { get; set; } = null!;
-
     public string BrandName { get; set; } = null!;
 
     public string? DeviceModel { get; set; }
@@ -24,6 +22,8 @@ public partial class Device
     public DateTime? LastMaintenance { get; set; }
 
     public DateTime? LastUpdate { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public int? ServiceId { get; set; }
 

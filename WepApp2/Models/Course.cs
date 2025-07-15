@@ -15,21 +15,11 @@ public partial class Course
 
     public string PresenterName { get; set; } = null!;
 
-    public int? SeatCapacity { get; set; }
-
-    public DateOnly CourseDate { get; set; }
-
-    public TimeOnly StartTime { get; set; }
-
-    public TimeOnly EndTime { get; set; }
+    public bool IsDeleted { get; set; }
 
     public int? ServiceId { get; set; }
 
-    public int? RequestId { get; set; }
-
-    public virtual Request? Request { get; set; }
+    public virtual ICollection<Request> Requests { get; set; } = new List<Request>();
 
     public virtual Service? Service { get; set; }
-
-    public virtual ICollection<Request> Requests { get; set; } = new List<Request>();
 }

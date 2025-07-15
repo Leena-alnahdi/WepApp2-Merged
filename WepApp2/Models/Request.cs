@@ -13,33 +13,33 @@ public partial class Request
 
     public DateTime RequestDate { get; set; }
 
-    public int SupervisorAssigned { get; set; }
+    public int? SupervisorAssigned { get; set; }
 
-    public string AdminStatus { get; set; } = null!;
+    public string? AdminStatus { get; set; }
 
-    public string Notes { get; set; } = null!;
+    public string? Notes { get; set; }
 
-    public int? UserId { get; set; }
+    public int UserId { get; set; }
 
-    public int? ServiceId { get; set; }
+    public int ServiceId { get; set; }
 
-    public int? DeviceId { get; set; }
+    public int DeviceId { get; set; }
+
+    public int? CourseId { get; set; }
 
     public virtual ICollection<BookingDevice> BookingDevices { get; set; } = new List<BookingDevice>();
 
     public virtual ICollection<Consultation> Consultations { get; set; } = new List<Consultation>();
 
-    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
+    public virtual Course? Course { get; set; }
 
-    public virtual Device? Device { get; set; }
+    public virtual Device Device { get; set; } = null!;
 
     public virtual ICollection<DeviceLoan> DeviceLoans { get; set; } = new List<DeviceLoan>();
 
     public virtual ICollection<LabVisit> LabVisits { get; set; } = new List<LabVisit>();
 
-    public virtual Service? Service { get; set; }
+    public virtual Service Service { get; set; } = null!;
 
-    public virtual User? User { get; set; }
-
-    public virtual ICollection<Course> CoursesNavigation { get; set; } = new List<Course>();
+    public virtual User User { get; set; } = null!;
 }

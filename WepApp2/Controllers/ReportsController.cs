@@ -77,9 +77,9 @@ namespace WepApp2.Controllers
                         الجهاز = r.Device?.DeviceName ?? "لا يوجد",
                         التاريخ = r.RequestDate.ToString("yyyy-MM-dd"),
                         الوقت = r.RequestDate.ToString("HH:mm"),
-                        المشرف_المسند = supervisors.ContainsKey(r.SupervisorAssigned)
-                            ? supervisors[r.SupervisorAssigned]
-                            : "غير مسند",
+                        المشرف_المسندالمشرف_المسند = r.SupervisorAssigned.HasValue && supervisors.ContainsKey(r.SupervisorAssigned.Value)
+    ? supervisors[r.SupervisorAssigned.Value]
+    : "غير مسند",
                         الحالة = GetRequestStatus(r)
                     }).ToList();
 
@@ -109,7 +109,6 @@ namespace WepApp2.Controllers
                     {
                         Id = d.DeviceId,
                         اسم_الجهاز = d.DeviceName,
-                        النوع = d.DeviceType,
                         الموقع = d.DeviceLocation ?? "غير محدد",
                         الشركة = d.BrandName ?? "غير محدد",
                         الطراز = d.DeviceModel ?? "غير محدد",

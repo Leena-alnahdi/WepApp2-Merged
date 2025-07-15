@@ -9,5 +9,7 @@ public partial class VisitsDetail
 
     public string VisitType { get; set; } = null!;
 
+    public bool IsDeleted { get; set; }
+
     public virtual ICollection<LabVisit> LabVisits { get; set; } = new List<LabVisit>();
 }

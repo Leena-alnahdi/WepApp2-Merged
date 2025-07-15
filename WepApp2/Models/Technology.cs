@@ -11,5 +11,7 @@ public partial class Technology
 
     public string TechnologyDescription { get; set; } = null!;
 
+    public bool IsDeleted { get; set; }
+
     public virtual ICollection<Device> Devices { get; set; } = new List<Device>();
 }

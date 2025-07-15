@@ -11,5 +11,7 @@ public partial class ConsultationMajor
 
     public string ConsultationDescription { get; set; } = null!;
 
+    public bool IsDeleted { get; set; }
+
     public virtual ICollection<Consultation> Consultations { get; set; } = new List<Consultation>();
 }

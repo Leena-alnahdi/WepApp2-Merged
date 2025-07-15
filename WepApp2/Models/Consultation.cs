@@ -9,7 +9,7 @@ public partial class Consultation
 
     public string ConsultationDescription { get; set; } = null!;
 
-    public DateOnly RequestedDate { get; set; }
+    public DateOnly ConsultationDate { get; set; }
 
     public TimeOnly AvailableTimes { get; set; }
 
