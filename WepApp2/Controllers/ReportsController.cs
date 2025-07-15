@@ -2,10 +2,15 @@
 using Microsoft.EntityFrameworkCore;
 using WepApp2.Models;
 using WepApp2.Data;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WepApp2.Controllers
 {
+    // [Authorize(Roles = "مدير,Admin")]  // مؤقتاً معطل للاختبار
     public class ReportsController : Controller
     {
         private readonly AppDbContext _context;
@@ -15,16 +20,86 @@ namespace WepApp2.Controllers
             _context = context;
         }
 
+        // GET: Reports/AllReports
         public IActionResult AllReports()
         {
-            return View();
+            try
+            {
+                // حساب تاريخ بداية الشهر الحالي
+                var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+                // عدد الطلبات هذا الشهر
+                var requestsThisMonth = _context.Requests
+                    .Where(r => r.RequestDate >= startOfMonth && r.RequestDate <= endOfMonth)
+                    .Count();
+
+                // عدد الأجهزة التي تحتاج صيانة
+                var devicesNeedMaintenance = _context.Devices
+                    .Where(d => d.DeviceStatus == "صيانة" || d.DeviceStatus == "Maintenance" ||
+                               d.DeviceStatus == "maintenance" || d.DeviceStatus == "تحت الصيانة")
+                    .Count();
+
+                // توزيع الأجهزة حسب الحالة
+                var deviceStatusData = _context.Devices
+                    .GroupBy(d => d.DeviceStatus ?? "غير محدد")
+                    .Select(g => new { Status = g.Key, Count = g.Count() })
+                    .ToList();
+
+                // أنواع الطلبات خلال الشهر
+                var requestTypesData = _context.Requests
+                    .Where(r => r.RequestDate >= startOfMonth && r.RequestDate <= endOfMonth)
+                    .GroupBy(r => r.RequestType ?? "غير محدد")
+                    .Select(g => new { Type = g.Key, Count = g.Count() })
+                    .ToList();
+
+                // توزيع المستخدمين حسب النوع (باستثناء المدير)
+                var usersDistributionData = _context.Users
+                    .Where(u => u.UserRole != "مدير" && u.UserRole != "Admin")
+                    .GroupBy(u => u.UserRole ?? "غير محدد")
+                    .Select(g => new { UserType = g.Key, Count = g.Count() })
+                    .ToList();
+
+                // توزيع الأجهزة حسب النوع
+                var deviceTypesData = _context.Devices
+                    .GroupBy(d => d.DeviceName ?? "غير محدد")
+                    .Select(g => new { Type = g.Key, Count = g.Count() })
+                    .ToList();
+
+                // تمرير البيانات إلى View
+                ViewBag.RequestsThisMonth = requestsThisMonth;
+                ViewBag.DevicesNeedMaintenance = devicesNeedMaintenance;
+                ViewBag.DeviceStatusData = deviceStatusData;
+                ViewBag.RequestTypesData = requestTypesData;
+                ViewBag.UsersDistributionData = usersDistributionData;
+                ViewBag.DeviceTypesData = deviceTypesData;
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                // في حالة حدوث خطأ، إرسال بيانات افتراضية
+                ViewBag.RequestsThisMonth = 0;
+                ViewBag.DevicesNeedMaintenance = 0;
+                ViewBag.DeviceStatusData = new List<object>();
+                ViewBag.RequestTypesData = new List<object>();
+                ViewBag.UsersDistributionData = new List<object>();
+                ViewBag.DeviceTypesData = new List<object>();
+
+                // يمكنك تسجيل الخطأ هنا إذا كان لديك نظام تسجيل
+                // _logger.LogError(ex, "Error in AllReports");
+
+                return View();
+            }
         }
 
+        // GET: Reports/CreateCustomReport
         public IActionResult CreateCustomReport()
         {
             return View();
         }
 
+        // POST: Reports/CreateCustomReport
         [HttpPost]
         public IActionResult CreateCustomReport(string reportTitle, string reportType, DateTime? fromDate, DateTime? toDate, string requestStatus, string deviceStatus, string userType, string serviceType, List<string> fields)
         {
@@ -77,9 +152,9 @@ namespace WepApp2.Controllers
                         الجهاز = r.Device?.DeviceName ?? "لا يوجد",
                         التاريخ = r.RequestDate.ToString("yyyy-MM-dd"),
                         الوقت = r.RequestDate.ToString("HH:mm"),
-                        المشرف_المسندالمشرف_المسند = r.SupervisorAssigned.HasValue && supervisors.ContainsKey(r.SupervisorAssigned.Value)
-    ? supervisors[r.SupervisorAssigned.Value]
-    : "غير مسند",
+                        المشرف_المسند = r.SupervisorAssigned.HasValue && supervisors.ContainsKey(r.SupervisorAssigned.Value)
+                            ? supervisors[r.SupervisorAssigned.Value]
+                            : "غير مسند",
                         الحالة = GetRequestStatus(r)
                     }).ToList();
 

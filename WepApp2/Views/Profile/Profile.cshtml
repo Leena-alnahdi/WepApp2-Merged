@@ -3,11 +3,11 @@
 @{
     string layoutPath = null;
 
-    if (Model.UserRole == "Admin")
+    if (Model.UserRole == "مدير")
     {
         layoutPath = "~/Views/Shared/_LayoutAdmin.cshtml";
     }
-    else if (Model.UserRole == "Supervisor")
+    else if (Model.UserRole == "مشرف")
     {
         layoutPath = "~/Views/Shared/_LayoutSupervisor.cshtml";
     }

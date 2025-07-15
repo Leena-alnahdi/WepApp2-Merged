@@ -3,10 +3,31 @@
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
+@using System.Text.Json
+@using WepApp2.Models
+
 @section Styles {
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/Gruop3Style.css" />
+    <style>
+        .allreports-chart-canvas-wrapper {
+            position: relative;
+            height: 280px !important;
+            padding-bottom: 30px;
+        }
 
+        .allreports-chart-card {
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 20px;
+        }
+
+            /* تقليل حجم legend للرسوم البيانية */
+            .allreports-chart-card canvas {
+                max-height: 240px !important;
+            }
+    </style>
 }
 
 <div class="container-fluid p-4">
@@ -17,11 +38,11 @@
 
     <div class="allreports-stats">
         <div class="allreports-stat-box total">
-            <h3>41</h3>
+            <h3>@(ViewBag.RequestsThisMonth ?? 0)</h3>
             <p>عدد الطلبات هذا الشهر</p>
         </div>
         <div class="allreports-stat-box maintenance">
-            <h3>6</h3>
+            <h3>@(ViewBag.DevicesNeedMaintenance ?? 0)</h3>
             <p>أجهزة بحاجة للصيانة</p>
         </div>
     </div>
@@ -39,16 +60,16 @@
         </div>
 
         <div class="allreports-chart-card">
-            <div class="allreports-chart-title">أنواع الطلبات خلال الشهر</div>
+            <div class="allreports-chart-title"> توزيع الطلبات خلال الشهر</div>
             <div class="allreports-chart-canvas-wrapper">
                 <canvas id="allReportsRequestTypeChart"></canvas>
             </div>
         </div>
 
         <div class="allreports-chart-card">
-            <div class="allreports-chart-title">توزيع المشرفات حسب القسم</div>
+            <div class="allreports-chart-title">توزيع المستخدمين حسب النوع</div>
             <div class="allreports-chart-canvas-wrapper">
-                <canvas id="allReportsSupervisorsChart"></canvas>
+                <canvas id="allReportsUsersDistributionChart"></canvas>
             </div>
         </div>
 
@@ -64,6 +85,23 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // البيانات من قاعدة البيانات
+        var deviceStatusData = @Html.Raw(ViewBag.DeviceStatusData != null ? JsonSerializer.Serialize(ViewBag.DeviceStatusData) : "[]");
+        var requestTypesData = @Html.Raw(ViewBag.RequestTypesData != null ? JsonSerializer.Serialize(ViewBag.RequestTypesData) : "[]");
+        var usersDistributionData = @Html.Raw(ViewBag.UsersDistributionData != null ? JsonSerializer.Serialize(ViewBag.UsersDistributionData) : "[]");
+        var deviceTypesData = @Html.Raw(ViewBag.DeviceTypesData != null ? JsonSerializer.Serialize(ViewBag.DeviceTypesData) : "[]");
+
+        // دالة مساعدة للحصول على الخاصية بغض النظر عن حالة الأحرف
+        function getPropertyValue(obj, propName) {
+            // جرب الحروف الصغيرة أولاً
+            if (obj[propName.toLowerCase()]) return obj[propName.toLowerCase()];
+            // ثم جرب الحروف الكبيرة
+            if (obj[propName.charAt(0).toUpperCase() + propName.slice(1)])
+                return obj[propName.charAt(0).toUpperCase() + propName.slice(1)];
+            // إذا لم تجد، ارجع null
+            return null;
+        }
+
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
             // Set default font family for Chart.js
@@ -73,7 +111,7 @@
             setTimeout(() => {
                 createAllReportsDeviceStatusChart();
                 createAllReportsRequestTypeChart();
-                createAllReportsSupervisorsChart();
+                createAllReportsUsersDistributionChart();
                 createAllReportsDeviceTypesChart();
             }, 100);
         });
@@ -83,14 +121,45 @@
             const canvas = document.getElementById('allReportsDeviceStatusChart');
             if (!canvas) return;
 
+            // تحضير البيانات
+            var labels = [];
+            var data = [];
+            var backgroundColor = [];
+
+            if (deviceStatusData && deviceStatusData.length > 0) {
+                deviceStatusData.forEach(function(item) {
+                    var status = getPropertyValue(item, 'status');
+                    var count = getPropertyValue(item, 'count');
+
+                    labels.push(status);
+                    data.push(count);
+
+                    // تحديد اللون حسب الحالة
+                    if (status === 'عاملة' || status === 'Active' || status === 'active') {
+                        backgroundColor.push('#38a169');
+                    } else if (status === 'صيانة' || status === 'Maintenance' || status === 'maintenance') {
+                        backgroundColor.push('#ed8936');
+                    } else if (status === 'غير متصل' || status === 'Offline' || status === 'offline') {
+                        backgroundColor.push('#e53e3e');
+                    } else {
+                        backgroundColor.push('#6b7280'); // لون رمادي للحالات غير المعروفة
+                    }
+                });
+            } else {
+                // بيانات افتراضية إذا لم تكن هناك بيانات
+                labels = ['لا توجد بيانات'];
+                data = [1];
+                backgroundColor = ['#cccccc'];
+            }
+
             const ctx = canvas.getContext('2d');
             new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: ['عاملة', 'صيانة', 'غير متصل'],
+                    labels: labels,
                     datasets: [{
-                        data: [18, 6, 4],
-                        backgroundColor: ['#38a169', '#ed8936', '#e53e3e']
+                        data: data,
+                        backgroundColor: backgroundColor
                     }]
                 },
                 options: {
@@ -100,10 +169,25 @@
                         legend: {
                             position: 'bottom',
                             labels: {
-                                padding: 15,
+                                padding: 8,
+                                boxWidth: 12,
                                 font: {
-                                    size: 12,
+                                    size: 10,
                                     family: "'Tajawal', sans-serif"
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed + ' مستخدم';
+                                    return label;
                                 }
                             }
                         }
@@ -117,14 +201,33 @@
             const canvas = document.getElementById('allReportsRequestTypeChart');
             if (!canvas) return;
 
+            // تحضير البيانات
+            var labels = [];
+            var data = [];
+            var colors = ['#667eea', '#764ba2', '#63b3ed', '#f6ad55', '#48bb78', '#10b981', '#e11d48'];
+
+            if (requestTypesData && requestTypesData.length > 0) {
+                requestTypesData.forEach(function(item, index) {
+                    var type = getPropertyValue(item, 'type');
+                    var count = getPropertyValue(item, 'count');
+
+                    labels.push(type);
+                    data.push(count);
+                });
+            } else {
+                labels = ['لا توجد بيانات'];
+                data = [1];
+                colors = ['#cccccc'];
+            }
+
             const ctx = canvas.getContext('2d');
             new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: ['استعارات', 'زيارات', 'استشارات', 'حجوزات أجهزة', 'دورات'],
+                    labels: labels,
                     datasets: [{
-                        data: [10, 5, 8, 11, 7],
-                        backgroundColor: ['#667eea', '#764ba2', '#63b3ed', '#f6ad55', '#48bb78']
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length)
                     }]
                 },
                 options: {
@@ -134,31 +237,85 @@
                         legend: {
                             position: 'bottom',
                             labels: {
-                                padding: 15,
+                                padding: 8,
+                                boxWidth: 12,
                                 font: {
-                                    size: 12,
+                                    size: 10,
                                     family: "'Tajawal', sans-serif"
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed + ' طلب';
+                                    return label;
                                 }
                             }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            bottom: 20
                         }
                     }
                 }
             });
         }
 
-        // Supervisors Chart
-        function createAllReportsSupervisorsChart() {
-            const canvas = document.getElementById('allReportsSupervisorsChart');
+        // Users Distribution Chart
+        function createAllReportsUsersDistributionChart() {
+            const canvas = document.getElementById('allReportsUsersDistributionChart');
             if (!canvas) return;
+
+            // تحضير البيانات
+            var labels = [];
+            var data = [];
+            var colors = ['#667eea', '#10b981', '#f59e0b', '#f472b6', '#a78bfa'];
+
+            // تحويل أنواع المستخدمين إلى العربية
+            var userTypeMapping = {
+                'Student': 'طالب',
+                'Faculty': 'عضو هيئة تدريس',
+                'Supervisor': 'مشرف',
+                'Admin': 'مدير',
+                'طالب': 'طالب',
+                'عضو هيئة تدريس': 'عضو هيئة تدريس',
+                'مشرف': 'مشرف',
+                'مدير': 'مدير'
+            };
+
+            if (usersDistributionData && usersDistributionData.length > 0) {
+                usersDistributionData.forEach(function(item) {
+                    var userType = getPropertyValue(item, 'userType');
+                    var count = getPropertyValue(item, 'count');
+
+                    // تحويل النوع إلى العربية إذا لزم الأمر
+                    var arabicUserType = userTypeMapping[userType] || userType;
+
+                    labels.push(arabicUserType);
+                    data.push(count);
+                });
+            } else {
+                labels = ['لا توجد بيانات'];
+                data = [1];
+                colors = ['#cccccc'];
+            }
 
             const ctx = canvas.getContext('2d');
             new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: ['الهندسة', 'الذكاء الاصطناعي', 'إلكترونيات'],
+                    labels: labels,
                     datasets: [{
-                        data: [5, 3, 2],
-                        backgroundColor: ['#48bb78', '#ecc94b', '#4299e1']
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length)
                     }]
                 },
                 options: {
@@ -168,11 +325,14 @@
                         legend: {
                             position: 'bottom',
                             labels: {
-                                padding: 15,
+                                padding: 8,
+                                boxWidth: 12,
                                 font: {
-                                    size: 12,
+                                    size: 10,
                                     family: "'Tajawal', sans-serif"
-                                }
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
                             }
                         }
                     }
@@ -185,14 +345,33 @@
             const canvas = document.getElementById('allReportsDeviceTypesChart');
             if (!canvas) return;
 
+            // تحضير البيانات
+            var labels = [];
+            var data = [];
+            var colors = ['#ed64a6', '#f6ad55', '#9f7aea', '#4ade80', '#06b6d4'];
+
+            if (deviceTypesData && deviceTypesData.length > 0) {
+                deviceTypesData.forEach(function(item) {
+                    var type = getPropertyValue(item, 'type');
+                    var count = getPropertyValue(item, 'count');
+
+                    labels.push(type);
+                    data.push(count);
+                });
+            } else {
+                labels = ['لا توجد بيانات'];
+                data = [1];
+                colors = ['#cccccc'];
+            }
+
             const ctx = canvas.getContext('2d');
             new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: ['طابعات ثلاثية الأبعاد', 'حاسبات', 'أجهزة قياس'],
+                    labels: labels,
                     datasets: [{
-                        data: [6, 7, 5],
-                        backgroundColor: ['#ed64a6', '#f6ad55', '#9f7aea']
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length)
                     }]
                 },
                 options: {
@@ -202,11 +381,14 @@
                         legend: {
                             position: 'bottom',
                             labels: {
-                                padding: 15,
+                                padding: 8,
+                                boxWidth: 12,
                                 font: {
-                                    size: 12,
+                                    size: 10,
                                     family: "'Tajawal', sans-serif"
-                                }
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
                             }
                         }
                     }
