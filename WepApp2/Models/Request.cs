@@ -25,7 +25,7 @@ public partial class Request
 
     public int DeviceId { get; set; }
 
-    public int? CourseId { get; set; }
+    public int? CourseID { get; set; }
 
     public virtual ICollection<BookingDevice> BookingDevices { get; set; } = new List<BookingDevice>();
 
