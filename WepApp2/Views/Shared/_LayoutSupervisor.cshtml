@@ -97,7 +97,7 @@
 		<div class="notifications-dropdown shadow rounded" id="notificationsDropdown">
 			<div class="notifications-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
 				<h5 class="mb-0 fw-bold">الإشعارات</h5>
-				<span class="badge bg-secondary rounded-circle px-2">0</span>
+				
 			</div>
 			<div class="notifications-list p-4 text-center text-muted" id="notificationsList" style="max-height: 300px; overflow-y: auto;">
 				لا توجد إشعارات حالياً
@@ -146,9 +146,31 @@
 	<script>
 
 		// إظهار / إخفاء قائمة الإشعارات
-		function toggleNotifications() {
+			function toggleNotifications() {
 			const dropdown = document.getElementById('notificationsDropdown');
 			dropdown.classList.toggle('show');
+
+			if (dropdown.classList.contains('show')) {
+				fetch('/Supervisor/GetMyRequests')
+					.then(res => res.json())
+					.then(data => {
+						const list = document.getElementById('notificationsList');
+						const badge = document.getElementById('notificationBadge');
+
+						if (data.length === 0) {
+							list.innerHTML = 'لا توجد إشعارات حالياً';
+							badge.textContent = '0';
+						} else {
+									list.innerHTML = data.map(r => `
+			<div class="notification-item mb-2 p-2 border-bottom text-end">
+				<div class="fw-bold">طلب جديد</div>
+				<div>نوع الطلب: <span class="text-primary">${r.requestType}</span></div>
+			</div>
+		`).join('');
+							badge.textContent = data.length;
+						}
+					});
+			}
 		}
 		// إغلاق القائمة عند الضغط خارجها
 		document.addEventListener('click', function (event) {

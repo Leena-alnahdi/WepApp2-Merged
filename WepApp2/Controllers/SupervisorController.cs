@@ -102,6 +102,26 @@ namespace WepApp2.Controllers
             return Json(consultation ?? new { consultationDescription = "غير متاح" });
         }
 
+        [HttpGet]
+        public IActionResult GetMyRequests()
+        {
+            var userId = User.FindFirst("UserId")?.Value;
+
+            if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int currentUserId))
+                return Unauthorized();
+
+            var requests = _context.Requests
+                .Where(r => r.SupervisorAssigned == currentUserId)
+                .Select(r => new
+                {
+                    r.RequestID,
+                    r.RequestType
+                }).ToList();
+
+            return Json(requests);
+        }
+
+
 
         public class UpdateStatusRequest
         {
