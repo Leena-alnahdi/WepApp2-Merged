@@ -56,7 +56,7 @@ namespace WepApp2.Controllers
 
                 // التوجيه حسب الدور
                 if (existingUser.UserRole == "مدير")
-                    return RedirectToAction("AllReports", "Reports");
+                    return RedirectToAction("Index", "Dashboard");
 
                 if (existingUser.UserRole == "مشرف")
                     return RedirectToAction("Index", "Supervisor");

@@ -70,7 +70,7 @@ Description: Form to update existing user information in the system
 
             <div class="col-md-6">
                 <label>النوع</label>
-                @Html.DropDownListFor(m => m.UserRole, new SelectList(new[] { "مشرف", "طالب", "عضو هيئة تدريس", "مدير بديل" }), "اختر النوع", new { @class = "form-select" })
+                @Html.DropDownListFor(m => m.UserRole, new SelectList(new[] { "مشرف", "طالب", "عضو هيئة تدريس", "مدير" }), "اختر النوع", new { @class = "form-select" })
                 @Html.ValidationMessageFor(m => m.UserRole)
             </div>
         </div>
