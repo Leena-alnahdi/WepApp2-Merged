@@ -55,7 +55,7 @@ namespace WepApp2.Controllers
 
                 // توزيع المستخدمين حسب النوع (باستثناء المدير)
                 var usersDistributionData = _context.Users
-                    .Where(u => u.UserRole != "ادمن" )
+                    .Where(u => u.UserRole != "مدير" )
                     .GroupBy(u => u.UserRole ?? "غير محدد")
                     .Select(g => new { UserType = g.Key, Count = g.Count() })
                     .ToList();
