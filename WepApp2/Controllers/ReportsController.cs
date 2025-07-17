@@ -235,51 +235,246 @@ namespace WepApp2.Controllers
                 }
                 else if (reportType == "تقرير الخدمات")
                 {
-                    // تقرير الخدمات بناءً على نوع الخدمة المحدد
-                    var servicesQuery = _context.Requests
-                        .Include(r => r.User)
-                        .Include(r => r.Service)
-                        .Include(r => r.Device)
-                        .AsQueryable();
-
-                    // تطبيق فلتر نوع الخدمة
-                    if (!string.IsNullOrEmpty(serviceType))
+                    if (serviceType == "زيارة المعمل")
                     {
-                        servicesQuery = servicesQuery.Where(r => r.RequestType == serviceType ||
-                            (r.Service != null && r.Service.ServiceName == serviceType));
+                        // جلب بيانات زيارات المعمل مع تفاصيلها
+                        var labVisitsQuery = from lv in _context.LabVisits
+                                             join vd in _context.VisitsDetails
+                                             on lv.LabVisitID equals vd.VisitDetailsID into visitDetails
+                                             from detail in visitDetails.DefaultIfEmpty()
+                                             select new { LabVisit = lv, VisitDetail = detail };
+
+                        // تطبيق فلتر التاريخ
+                        if (fromDate.HasValue)
+                        {
+                            labVisitsQuery = labVisitsQuery.Where(x => x.LabVisit.VisitDate >= fromDate.Value);
+                        }
+                        if (toDate.HasValue)
+                        {
+                            labVisitsQuery = labVisitsQuery.Where(x => x.LabVisit.VisitDate <= toDate.Value);
+                        }
+
+                        var labVisits = labVisitsQuery.ToList();
+
+                        // تحويل البيانات للعرض
+                        var labVisitData = labVisits.Select(x => new
+                        {
+                            نوع_الخدمة = "زيارة المعمل",
+                            نوع_الزيارة = x.VisitDetail?.VisitType ?? "غير محدد",
+                            عدد_الزوار = x.LabVisit.NumberOfVisitors,
+                            تاريخ_الزيارة = x.LabVisit.VisitDate.ToString("yyyy-MM-dd"),
+                            الوقت = x.LabVisit.PreferredTime.ToString(@"hh\:mm"),
+                            مقدم_الطلب = x.LabVisit.PreferredContactMethod ?? "غير محدد",
+                            ملاحظات_إضافية = x.LabVisit.AdditionalNotes ?? "لا توجد",
+                            الحالة = x.VisitDetail?.IsDeleted == false ? "نشط" : "محذوف"
+                        }).ToList();
+
+                        ViewBag.ReportTitle = reportTitle;
+                        ViewBag.ReportType = reportType;
+                        ViewBag.ServiceType = serviceType;
+                        ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                        ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                        ViewBag.SelectedFields = fields ?? new List<string>();
+
+                        return View("PrintReport", labVisitData);
                     }
-
-                    // تطبيق فلتر التاريخ
-                    if (fromDate.HasValue)
+                    else if (serviceType == "حجز الأجهزة")
                     {
-                        servicesQuery = servicesQuery.Where(r => r.RequestDate >= fromDate.Value);
+                        // جلب بيانات حجز الأجهزة مع العلاقات
+                        var bookingDevicesQuery = _context.BookingDevices
+                            .Include(bd => bd.Request)
+                                .ThenInclude(r => r.User)
+                            .Include(bd => bd.Device) // إذا كانت هناك علاقة مع جدول الأجهزة
+                            .AsQueryable();
+
+                        // تطبيق فلتر التاريخ باستخدام BookingDate
+                        if (fromDate.HasValue)
+                        {
+                            var fromDateOnly = DateOnly.FromDateTime(fromDate.Value);
+                            bookingDevicesQuery = bookingDevicesQuery.Where(bd => bd.BookingDate >= fromDateOnly);
+                        }
+                        if (toDate.HasValue)
+                        {
+                            var toDateOnly = DateOnly.FromDateTime(toDate.Value);
+                            bookingDevicesQuery = bookingDevicesQuery.Where(bd => bd.BookingDate <= toDateOnly);
+                        }
+
+                        var bookings = bookingDevicesQuery.ToList();
+
+                        // تحويل البيانات للعرض
+                        var bookingData = bookings.Select(b => new
+                        {
+                            // استخدم ProjectName كاسم الجهاز إذا لم تكن هناك علاقة مع جدول الأجهزة
+                            اسم_الجهاز = b.Device?.DeviceName ?? b.ProjectName ?? "غير محدد",
+                            اسم_المستفيد = b.Request?.User != null
+                                ? $"{b.Request.User.FirstName} {b.Request.User.LastName}".Trim()
+                                : "غير محدد",
+                            اسم_المشروع = b.ProjectName ?? "غير محدد",
+                            وصف_المشروع = b.ProjectDescription ?? "لا يوجد وصف",
+                            تاريخ_الحجز = b.BookingDate.ToString("yyyy-MM-dd"),
+                            بداية_الوقت = b.StartTime.ToString("HH:mm"),
+                            نهاية_الوقت = b.EndTime.ToString("HH:mm")
+                        }).ToList();
+
+                        ViewBag.ReportTitle = reportTitle;
+                        ViewBag.ReportType = reportType;
+                        ViewBag.ServiceType = serviceType;
+                        ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                        ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                        ViewBag.SelectedFields = fields ?? new List<string>();
+
+                        return View("PrintReport", bookingData);
                     }
-                    if (toDate.HasValue)
+                    else if (serviceType == "إعارة الأجهزة")
                     {
-                        servicesQuery = servicesQuery.Where(r => r.RequestDate <= toDate.Value);
+                        // جلب بيانات إعارة الأجهزة
+                        var deviceLoansQuery = _context.DeviceLoans.AsQueryable();
+
+                        // تطبيق فلتر التاريخ
+                        if (fromDate.HasValue && toDate.HasValue)
+                        {
+                            var fromDateOnly = DateOnly.FromDateTime(fromDate.Value);
+                            var toDateOnly = DateOnly.FromDateTime(toDate.Value);
+                            deviceLoansQuery = deviceLoansQuery.Where(dl =>
+                                dl.StartDate >= fromDateOnly && dl.EndDate <= toDateOnly);
+                        }
+
+                        var loans = deviceLoansQuery.ToList();
+
+                        // تحويل البيانات للعرض
+                        var loanData = loans.Select(l => new
+                        {
+                            نوع_الخدمة = "إعارة الأجهزة",
+                            الغرض = l.Purpose ?? "غير محدد",
+                            تاريخ_البداية = l.StartDate.ToString("yyyy-MM-dd"),
+                            تاريخ_النهاية = l.EndDate.ToString("yyyy-MM-dd"),
+                            المدة = (l.EndDate.ToDateTime(TimeOnly.MinValue) - l.StartDate.ToDateTime(TimeOnly.MinValue)).Days + " يوم",
+                            طريقة_التواصل = l.PreferredContactMethod ?? "غير محدد",
+                            مقدم_الطلب = "مستخدم النظام",
+                            حالة_الطلب = "نشط"
+                        }).ToList();
+
+                        ViewBag.ReportTitle = reportTitle;
+                        ViewBag.ReportType = reportType;
+                        ViewBag.ServiceType = serviceType;
+                        ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                        ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                        ViewBag.SelectedFields = fields ?? new List<string>();
+
+                        return View("PrintReport", loanData);
                     }
-
-                    var services = servicesQuery.ToList();
-
-                    // تحويل البيانات حسب نوع الخدمة
-                    var serviceData = services.Select(r => new
+                    else if (serviceType == "الدورات التدريبية")
                     {
-                        نوع_الخدمة = GetServiceName(r),
-                        وصف_الخدمة = r.RequestType ?? "غير محدد",
-                        تاريخ_الطلب = r.RequestDate.ToString("yyyy-MM-dd"),
-                        المستخدم = GetUserFullName(r.User),
-                        الحالة = GetRequestStatus(r)
-                    }).ToList();
+                        // جلب بيانات الدورات التدريبية
+                        var coursesQuery = _context.Courses.AsQueryable();
 
-                    ViewBag.ReportTitle = reportTitle;
-                    ViewBag.ReportType = reportType;
-                    ViewBag.ServiceType = serviceType;
-                    ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
-                    ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
-                    ViewBag.SelectedFields = fields ?? new List<string>();
+                        // تطبيق فلتر التاريخ إذا لزم الأمر
+                        var courses = coursesQuery.Where(c => c.IsDeleted == false).ToList();
 
-                    return View("PrintReport", serviceData);
+                        // تحويل البيانات للعرض
+                        var courseData = courses.Select(c => new
+                        {
+                            نوع_الخدمة = "الدورات التدريبية",
+                            اسم_الدورة = c.CourseName ?? "غير محدد",
+                            مجال_الدورة = c.CourseField ?? "غير محدد",
+                            مقدم_الدورة = c.PresenterName ?? "غير محدد",
+                            وصف_الدورة = c.CourseDescription ?? "لا يوجد وصف"
+                        }).ToList();
+
+                        ViewBag.ReportTitle = reportTitle;
+                        ViewBag.ReportType = reportType;
+                        ViewBag.ServiceType = serviceType;
+                        ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                        ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                        ViewBag.SelectedFields = fields ?? new List<string>();
+
+                        return View("PrintReport", courseData);
+                    }
+                    else if (serviceType == "الاستشارات التقنية")
+                    {
+                        // جلب بيانات الاستشارات التقنية
+                        var consultationsQuery = _context.Consultations
+                            .Include(c => c.ConsultationMajor)
+                            .AsQueryable();
+
+                        // تطبيق فلتر التاريخ
+                        if (fromDate.HasValue)
+                        {
+                            var fromDateOnly = DateOnly.FromDateTime(fromDate.Value);
+                            consultationsQuery = consultationsQuery.Where(c => c.ConsultationDate >= fromDateOnly);
+                        }
+                        if (toDate.HasValue)
+                        {
+                            var toDateOnly = DateOnly.FromDateTime(toDate.Value);
+                            consultationsQuery = consultationsQuery.Where(c => c.ConsultationDate <= toDateOnly);
+                        }
+
+                        var consultations = consultationsQuery.ToList();
+
+                        // تحويل البيانات للعرض
+                        var consultationData = consultations.Select(c => new
+                        {
+                            نوع_الخدمة = "الاستشارات التقنية",
+                            عنوان_الاستشارة = c.ConsultationDescription ?? "غير محدد",
+                            الوصف = c.ConsultationDescription ?? "غير محدد",
+                            المجال = c.ConsultationMajor?.Major ?? "غير محدد",
+                            تاريخ_الاستشارة = c.ConsultationDate.ToString("yyyy-MM-dd"),
+                            الأوقات_المتاحة = c.AvailableTimes.ToString("HH:mm"),  // بدون ?? لأن TimeOnly لا يمكن أن يكون null
+                            طريقة_التواصل = c.PreferredContactMethod ?? "غير محدد",
+                            مقدم_الاستشارة = "مستخدم النظام",
+                            الحالة = "نشط"  // قيمة افتراضية
+                        }).ToList();
+
+                        ViewBag.ReportTitle = reportTitle;
+                        ViewBag.ReportType = reportType;
+                        ViewBag.ServiceType = serviceType;
+                        ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                        ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                        ViewBag.SelectedFields = fields ?? new List<string>();
+
+                        return View("PrintReport", consultationData);
+                    }
+                    else
+                    {
+                        // جميع الخدمات - الكود الحالي
+                        var servicesQuery = _context.Requests
+                            .Include(r => r.User)
+                            .Include(r => r.Service)
+                            .Include(r => r.Device)
+                            .AsQueryable();
+
+                        // تطبيق فلتر التاريخ
+                        if (fromDate.HasValue)
+                        {
+                            servicesQuery = servicesQuery.Where(r => r.RequestDate >= fromDate.Value);
+                        }
+                        if (toDate.HasValue)
+                        {
+                            servicesQuery = servicesQuery.Where(r => r.RequestDate <= toDate.Value);
+                        }
+
+                        var services = servicesQuery.ToList();
+
+                        var serviceData = services.Select(r => new
+                        {
+                            نوع_الخدمة = GetServiceName(r),
+                            وصف_الخدمة = r.RequestType ?? "غير محدد",
+                            تاريخ_الطلب = r.RequestDate.ToString("yyyy-MM-dd"),
+                            المستخدم = GetUserFullName(r.User),
+                            الحالة = GetRequestStatus(r)
+                        }).ToList();
+
+                        ViewBag.ReportTitle = reportTitle;
+                        ViewBag.ReportType = reportType;
+                        ViewBag.ServiceType = serviceType;
+                        ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+                        ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+                        ViewBag.SelectedFields = fields ?? new List<string>();
+
+                        return View("PrintReport", serviceData);
+                    }
                 }
+            
                 else
                 {
                     // للتقارير الأخرى
