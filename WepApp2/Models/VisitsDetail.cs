@@ -15,4 +15,9 @@ public partial class VisitsDetail
     public bool IsDeleted { get; set; }
 
     public virtual ICollection<LabVisit> LabVisits { get; set; } = new List<LabVisit>();
+
+    internal IEnumerable<object> Select(Func<object, object> value)
+    {
+        throw new NotImplementedException();
+    }
 }
