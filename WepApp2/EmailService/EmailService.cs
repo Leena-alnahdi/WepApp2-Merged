@@ -38,7 +38,7 @@ namespace WepApp2.EmailService
                     var mailMessage = new MailMessage
                     {
                         From = new MailAddress(fromEmail, fromName),
-                        Subject = "استعادة كلمة المرور - معمل الابتكارات",
+                        Subject = "استعادة كلمة المرور - ادارة تقنيات معمل الابتكارات",
                         IsBodyHtml = true,
                         Body = GenerateEmailBody(firstName, resetLink)
                     };
@@ -60,7 +60,7 @@ namespace WepApp2.EmailService
                 <div style='direction: rtl; font-family: Tajawal, Arial, sans-serif; padding: 20px; background-color: #f5f5f5;'>
                     <div style='max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
                         <div style='text-align: center; margin-bottom: 30px;'>
-                            <h2 style='color: #2c3e50;'>معمل الابتكارات</h2>
+                            <h2 style='color: #2c3e50;'>اداة تقنيات معمل الابتكارات</h2>
                         </div>
                         
                         <h3 style='color: #34495e;'>مرحباً {firstName}</h3>
@@ -70,7 +70,7 @@ namespace WepApp2.EmailService
                         </p>
                         
                         <div style='text-align: center; margin: 30px 0;'>
-                            <a href='{resetLink}' style='display: inline-block; background-color: #3498db; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px;'>
+                            <a href='{resetLink}' style='display: inline-block; background-color: #0ea54a; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 16px;'>
                                 إعادة تعيين كلمة المرور
                             </a>
                         </div>
@@ -90,6 +90,20 @@ namespace WepApp2.EmailService
                             <span style='color: #3498db; word-break: break-all;'>{resetLink}</span>
                         </p>
                     </div>
+ <!-- ذيل البريد -->
+            <div style='background-color: #f8f9fa; padding: 30px 25px; text-align: center; border-top: 1px solid #e9ecef;'>
+                <div style='font-size: 16px; color: #13b35e; margin-bottom: 15px; font-weight: 600;'>
+                     شكرًا لاستخدامك نظام إدارة تقنيات معمل الابتكارات
+                </div>
+                <div style='font-size: 14px; color: #6c757d; line-height: 1.6;'>
+                    إذا كنت تواجه أي مشكلة أو تحتاج إلى مساعدة، يرجى التواصل معنا
+                    <br>
+                    <strong>البريد الإلكتروني:</strong> support@innovations-lab.com
+                    <br>
+                    <strong>الهاتف:</strong> +966 11 123 4567
+                </div>
+            </div>
+        </div>
                 </div>
             ";
         }
