@@ -62,6 +62,15 @@
                 </div>
             }
 
+            @if (ViewBag.PasswordTooShort == true)
+            {
+                <div class="wil-alert wil-alert--danger">
+                    <i class="fas fa-exclamation-triangle wil-icon-spacing-sm"></i>
+                    كلمة المرور يجب أن تكون 8 خانات على الأقل.
+                </div>
+            }
+
+
             <div id="wil-terms-error" class="wil-alert wil-alert--warning" style="display: none;">
                 <i class="fas fa-exclamation-triangle wil-icon-spacing-sm"></i>
                 يجب الموافقة على الشروط والأحكام قبل إنشاء الحساب
@@ -253,6 +262,37 @@
                 }
             });
         });
+
+
+                const form = document.querySelector('form');
+        form.addEventListener('submit', function (e) {
+            const passwordInput = document.querySelector('input[name="UserPassWord"]');
+            const password = passwordInput.value.trim();
+
+            // إذا كانت كلمة المرور أقل من 8 حروف
+            if (password.length < 8) {
+                e.preventDefault(); // منع إرسال النموذج
+
+                // إظهار رسالة الخطأ الجديدة
+                let errorDiv = document.querySelector('.wil-alert--short-password');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'wil-alert wil-alert--danger wil-alert--short-password';
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle wil-icon-spacing-sm"></i> كلمة المرور يجب أن تكون 8 خانات على الأقل.';
+                    form.parentNode.insertBefore(errorDiv, form);
+                }
+
+                // تمرير الشاشة لأعلى لعرض الخطأ
+                errorDiv.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // إذا تم تصحيح الخطأ، نحذف التنبيه السابق (لو كان موجود)
+                const existingError = document.querySelector('.wil-alert--short-password');
+                if (existingError) {
+                    existingError.remove();
+                }
+            }
+        });
+
     </script>
 </body>
 </html>
