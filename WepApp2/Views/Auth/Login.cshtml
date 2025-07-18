@@ -43,15 +43,6 @@
                 </div>
             }
 
-            @if (ViewBag.ResetSuccess == true)
-            {
-                <div class="wil-alert wil-alert--success" id="wil-reset-success-alert">
-                    <i class="fas fa-check-circle wil-icon-spacing-sm"></i>
-                    <strong>تم إرسال رابط الاستعادة بنجاح!</strong><br>
-                    تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني. يرجى التأكد من بريدك الإلكتروني واتباع التعليمات.
-                </div>
-            }
-
             <form method="post" asp-action="Login">
                 @Html.AntiForgeryToken()
 
@@ -90,21 +81,5 @@
             </form>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // إخفاء رسالة النجاح تلقائياً بعد 8 ثوان
-            const successAlert = document.getElementById('wil-reset-success-alert');
-            if (successAlert) {
-                setTimeout(function () {
-                    successAlert.style.opacity = '0';
-                    successAlert.style.transform = 'translateY(-20px)';
-                    setTimeout(function () {
-                        successAlert.style.display = 'none';
-                    }, 300);
-                }, 8000);
-            }
-        });
-    </script>
 </body>
 </html>

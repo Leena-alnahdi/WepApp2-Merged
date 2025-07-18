@@ -55,7 +55,7 @@ namespace WepApp2.Controllers
 
                 // توزيع المستخدمين حسب النوع (باستثناء المدير)
                 var usersDistributionData = _context.Users
-                    .Where(u => u.UserRole != "ادمن" )
+                    .Where(u => u.UserRole != "مدير"&&u.UserRole != "مشرف")
                     .GroupBy(u => u.UserRole ?? "غير محدد")
                     .Select(g => new { UserType = g.Key, Count = g.Count() })
                     .ToList();
@@ -238,35 +238,39 @@ namespace WepApp2.Controllers
                     if (serviceType == "زيارة المعمل")
                     {
                         // جلب بيانات زيارات المعمل مع تفاصيلها
-                        var labVisitsQuery = from lv in _context.LabVisits
-                                             join vd in _context.VisitsDetails
-                                             on lv.LabVisitID equals vd.VisitDetailsID into visitDetails
-                                             from detail in visitDetails.DefaultIfEmpty()
-                                             select new { LabVisit = lv, VisitDetail = detail };
+                        var labVisitsQuery = _context.LabVisits
+                            .Include(lv => lv.Request)
+                                .ThenInclude(r => r.User)
+                            .Include(lv => lv.VisitDetails)
+                            .Include(lv => lv.Service)
+                            .AsQueryable();
 
                         // تطبيق فلتر التاريخ
                         if (fromDate.HasValue)
                         {
-                            labVisitsQuery = labVisitsQuery.Where(x => x.LabVisit.VisitDate >= fromDate.Value);
+                            labVisitsQuery = labVisitsQuery.Where(lv => lv.VisitDate >= fromDate.Value);
                         }
                         if (toDate.HasValue)
                         {
-                            labVisitsQuery = labVisitsQuery.Where(x => x.LabVisit.VisitDate <= toDate.Value);
+                            labVisitsQuery = labVisitsQuery.Where(lv => lv.VisitDate <= toDate.Value);
                         }
 
                         var labVisits = labVisitsQuery.ToList();
 
                         // تحويل البيانات للعرض
-                        var labVisitData = labVisits.Select(x => new
+                        var labVisitData = labVisits.Select(lv => new
                         {
-                            نوع_الخدمة = "زيارة المعمل",
-                            نوع_الزيارة = x.VisitDetail?.VisitType ?? "غير محدد",
-                            عدد_الزوار = x.LabVisit.NumberOfVisitors,
-                            تاريخ_الزيارة = x.LabVisit.VisitDate.ToString("yyyy-MM-dd"),
-                            الوقت = x.LabVisit.PreferredTime.ToString(@"hh\:mm"),
-                            مقدم_الطلب = x.LabVisit.PreferredContactMethod ?? "غير محدد",
-                            ملاحظات_إضافية = x.LabVisit.AdditionalNotes ?? "لا توجد",
-                            الحالة = x.VisitDetail?.IsDeleted == false ? "نشط" : "محذوف"
+                            نوع_الزيارة = lv.VisitDetails?.VisitType ?? "زيارة عامة",
+                            وصف_الزيارة = lv.AdditionalNotes ?? "لا يوجد وصف",
+                            اسم_المستفيد = lv.Request?.User != null
+                                ? $"{lv.Request.User.FirstName} {lv.Request.User.LastName}".Trim()
+                                : lv.PreferredContactMethod ?? "زائر خارجي",
+                            تاريخ_الزيارة = lv.VisitDate.ToString("yyyy-MM-dd"),
+                            الحالة = lv.Request?.AdminStatus ??
+                                    lv.Request?.SupervisorStatus ??
+                                    (lv.VisitDetails?.IsDeleted == false ? "نشط" : "جديد"),
+                            عدد_الزوار = lv.NumberOfVisitors,
+                            الوقت = lv.PreferredTime.ToString(@"hh\:mm")
                         }).ToList();
 
                         ViewBag.ReportTitle = reportTitle;
@@ -327,7 +331,7 @@ namespace WepApp2.Controllers
                     }
                     else if (serviceType == "إعارة الأجهزة")
                     {
-                        // جلب بيانات إعارة الأجهزة
+                        // جلب بيانات إعارة الأجهزة مع العلاقات
                         var deviceLoansQuery = _context.DeviceLoans.AsQueryable();
 
                         // تطبيق فلتر التاريخ
@@ -341,17 +345,55 @@ namespace WepApp2.Controllers
 
                         var loans = deviceLoansQuery.ToList();
 
+                        // جلب معلومات الأجهزة
+                        var deviceIds = loans.Where(l => l.DeviceId.HasValue)
+                            .Select(l => l.DeviceId.Value).Distinct().ToList();
+                        var devices = _context.Devices
+                            .Where(d => deviceIds.Contains(d.DeviceID))
+                            .ToDictionary(d => d.DeviceID, d => d.DeviceName);
+
+                        // جلب معلومات المستخدمين من خلال الطلبات
+                        var requestIds = loans.Where(l => l.RequestId.HasValue)
+                            .Select(l => l.RequestId.Value).Distinct().ToList();
+                        var requests = _context.Requests
+                            .Include(r => r.User)
+                            .Where(r => requestIds.Contains(r.RequestID))
+                            .ToDictionary(r => r.RequestID);
+
                         // تحويل البيانات للعرض
-                        var loanData = loans.Select(l => new
-                        {
-                            نوع_الخدمة = "إعارة الأجهزة",
-                            الغرض = l.Purpose ?? "غير محدد",
-                            تاريخ_البداية = l.StartDate.ToString("yyyy-MM-dd"),
-                            تاريخ_النهاية = l.EndDate.ToString("yyyy-MM-dd"),
-                            المدة = (l.EndDate.ToDateTime(TimeOnly.MinValue) - l.StartDate.ToDateTime(TimeOnly.MinValue)).Days + " يوم",
-                            طريقة_التواصل = l.PreferredContactMethod ?? "غير محدد",
-                            مقدم_الطلب = "مستخدم النظام",
-                            حالة_الطلب = "نشط"
+                        var loanData = loans.Select(l => {
+                            // الحصول على اسم الجهاز
+                            string deviceName = "غير محدد";
+                            if (l.DeviceId.HasValue && devices.ContainsKey(l.DeviceId.Value))
+                            {
+                                deviceName = devices[l.DeviceId.Value];
+                            }
+
+                            // الحصول على معلومات المستخدم
+                            string userName = "مستخدم النظام";
+                            string status = "نشط";
+                            if (l.RequestId.HasValue && requests.ContainsKey(l.RequestId.Value))
+                            {
+                                var request = requests[l.RequestId.Value];
+                                if (request.User != null)
+                                {
+                                    userName = $"{request.User.FirstName} {request.User.LastName}".Trim();
+                                }
+                                status = request.AdminStatus ?? request.SupervisorStatus ?? "نشط";
+                            }
+                            else if (!string.IsNullOrEmpty(l.PreferredContactMethod))
+                            {
+                                userName = l.PreferredContactMethod;
+                            }
+
+                            return new
+                            {
+                                اسم_الجهاز = deviceName,
+                                الغرض = l.Purpose ?? "غير محدد",
+                                مدة_الإعارة = (l.EndDate.ToDateTime(TimeOnly.MinValue) - l.StartDate.ToDateTime(TimeOnly.MinValue)).Days + " يوم",
+                                مقدم_الطلب = userName,
+                                الحالة = status
+                            };
                         }).ToList();
 
                         ViewBag.ReportTitle = reportTitle;
@@ -395,6 +437,8 @@ namespace WepApp2.Controllers
                         // جلب بيانات الاستشارات التقنية
                         var consultationsQuery = _context.Consultations
                             .Include(c => c.ConsultationMajor)
+                            .Include(c => c.Request)
+                                .ThenInclude(r => r.User)
                             .AsQueryable();
 
                         // تطبيق فلتر التاريخ
@@ -411,18 +455,40 @@ namespace WepApp2.Controllers
 
                         var consultations = consultationsQuery.ToList();
 
+                        var supervisorIds = consultations
+     .Where(c => c.Request != null && c.Request.SupervisorAssigned.HasValue)
+     .Select(c => c.Request.SupervisorAssigned.Value)
+     .Distinct()
+     .ToList();
+
+                        var supervisors = _context.Users
+                            .Where(u => supervisorIds.Contains(u.UserID))
+                            .ToDictionary(u => u.UserID, u => $"{u.FirstName} {u.LastName}".Trim());
+
                         // تحويل البيانات للعرض
-                        var consultationData = consultations.Select(c => new
-                        {
-                            نوع_الخدمة = "الاستشارات التقنية",
-                            عنوان_الاستشارة = c.ConsultationDescription ?? "غير محدد",
-                            الوصف = c.ConsultationDescription ?? "غير محدد",
-                            المجال = c.ConsultationMajor?.Major ?? "غير محدد",
-                            تاريخ_الاستشارة = c.ConsultationDate.ToString("yyyy-MM-dd"),
-                            الأوقات_المتاحة = c.AvailableTimes.ToString("HH:mm"),  // بدون ?? لأن TimeOnly لا يمكن أن يكون null
-                            طريقة_التواصل = c.PreferredContactMethod ?? "غير محدد",
-                            مقدم_الاستشارة = "مستخدم النظام",
-                            الحالة = "نشط"  // قيمة افتراضية
+                        var consultationData = consultations.Select(c => {
+                            // الحصول على اسم المشرف (مقدم الاستشارة)
+                            string supervisorName = "غير مسند";
+                            if (c.Request != null && c.Request.SupervisorAssigned.HasValue && supervisors.ContainsKey(c.Request.SupervisorAssigned.Value))
+                            {
+                                supervisorName = supervisors[c.Request.SupervisorAssigned.Value];
+                            }
+
+                            return new
+                            {
+                                عنوان_الاستشارة = c.ConsultationDescription ?? "غير محدد",
+                                مجال_الاستشارة = c.ConsultationMajor?.Major ?? "غير محدد",
+                                وصف_الاستشارة = c.ConsultationDescription ?? "لا يوجد وصف",
+                                المستفيد = c.Request?.User != null
+                                    ? $"{c.Request.User.FirstName} {c.Request.User.LastName}".Trim()
+                                    : c.PreferredContactMethod ?? "غير محدد",
+                                مقدم_الاستشارة = supervisorName, // مقدم الاستشارة من SupervisorAssigned
+                                التاريخ = c.ConsultationDate.ToString("yyyy-MM-dd"),
+                                الوقت = c.AvailableTimes.ToString("HH:mm"),
+                                الحالة = c.Request?.AdminStatus ??
+                                        c.Request?.SupervisorStatus ??
+                                        "جديد"
+                            };
                         }).ToList();
 
                         ViewBag.ReportTitle = reportTitle;
