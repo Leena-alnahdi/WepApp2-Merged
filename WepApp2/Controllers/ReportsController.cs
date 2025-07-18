@@ -55,7 +55,7 @@ namespace WepApp2.Controllers
 
                 // توزيع المستخدمين حسب النوع (باستثناء المدير)
                 var usersDistributionData = _context.Users
-                    .Where(u => u.UserRole != "مدير" )
+                    .Where(u => u.UserRole != "مدير"&&u.UserRole != "مشرف")
                     .GroupBy(u => u.UserRole ?? "غير محدد")
                     .Select(g => new { UserType = g.Key, Count = g.Count() })
                     .ToList();
@@ -238,35 +238,39 @@ namespace WepApp2.Controllers
                     if (serviceType == "زيارة المعمل")
                     {
                         // جلب بيانات زيارات المعمل مع تفاصيلها
-                        var labVisitsQuery = from lv in _context.LabVisits
-                                             join vd in _context.VisitsDetails
-                                             on lv.LabVisitID equals vd.VisitDetailsID into visitDetails
-                                             from detail in visitDetails.DefaultIfEmpty()
-                                             select new { LabVisit = lv, VisitDetail = detail };
+                        var labVisitsQuery = _context.LabVisits
+                            .Include(lv => lv.Request)
+                                .ThenInclude(r => r.User)
+                            .Include(lv => lv.VisitDetails)
+                            .Include(lv => lv.Service)
+                            .AsQueryable();
 
                         // تطبيق فلتر التاريخ
                         if (fromDate.HasValue)
                         {
-                            labVisitsQuery = labVisitsQuery.Where(x => x.LabVisit.VisitDate >= fromDate.Value);
+                            labVisitsQuery = labVisitsQuery.Where(lv => lv.VisitDate >= fromDate.Value);
                         }
                         if (toDate.HasValue)
                         {
-                            labVisitsQuery = labVisitsQuery.Where(x => x.LabVisit.VisitDate <= toDate.Value);
+                            labVisitsQuery = labVisitsQuery.Where(lv => lv.VisitDate <= toDate.Value);
                         }
 
                         var labVisits = labVisitsQuery.ToList();
 
                         // تحويل البيانات للعرض
-                        var labVisitData = labVisits.Select(x => new
+                        var labVisitData = labVisits.Select(lv => new
                         {
-                            نوع_الخدمة = "زيارة المعمل",
-                            نوع_الزيارة = x.VisitDetail?.VisitType ?? "غير محدد",
-                            عدد_الزوار = x.LabVisit.NumberOfVisitors,
-                            تاريخ_الزيارة = x.LabVisit.VisitDate.ToString("yyyy-MM-dd"),
-                            الوقت = x.LabVisit.PreferredTime.ToString(@"hh\:mm"),
-                            مقدم_الطلب = x.LabVisit.PreferredContactMethod ?? "غير محدد",
-                            ملاحظات_إضافية = x.LabVisit.AdditionalNotes ?? "لا توجد",
-                            الحالة = x.VisitDetail?.IsDeleted == false ? "نشط" : "محذوف"
+                            نوع_الزيارة = lv.VisitDetails?.VisitType ?? "زيارة عامة",
+                            وصف_الزيارة = lv.AdditionalNotes ?? "لا يوجد وصف",
+                            اسم_المستفيد = lv.Request?.User != null
+                                ? $"{lv.Request.User.FirstName} {lv.Request.User.LastName}".Trim()
+                                : lv.PreferredContactMethod ?? "زائر خارجي",
+                            تاريخ_الزيارة = lv.VisitDate.ToString("yyyy-MM-dd"),
+                            الحالة = lv.Request?.AdminStatus ??
+                                    lv.Request?.SupervisorStatus ??
+                                    (lv.VisitDetails?.IsDeleted == false ? "نشط" : "جديد"),
+                            عدد_الزوار = lv.NumberOfVisitors,
+                            الوقت = lv.PreferredTime.ToString(@"hh\:mm")
                         }).ToList();
 
                         ViewBag.ReportTitle = reportTitle;
