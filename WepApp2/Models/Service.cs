@@ -21,8 +21,6 @@ public partial class Service
 
     public virtual ICollection<DeviceLoan> DeviceLoans { get; set; } = new List<DeviceLoan>();
 
-    public virtual ICollection<Device> Devices { get; set; } = new List<Device>();
-
     public virtual ICollection<LabVisit> LabVisits { get; set; } = new List<LabVisit>();
 
     public virtual ICollection<Request> Requests { get; set; } = new List<Request>();

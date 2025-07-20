@@ -44,7 +44,7 @@ public partial class AppDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=ASMA;Database=DBGroup2;Trusted_Connection=True;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=LAPTOP-UBN31PE8;Database=DBGroup2;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -139,13 +139,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.LastMaintenance).HasColumnType("datetime");
             entity.Property(e => e.LastUpdate).HasColumnType("datetime");
             entity.Property(e => e.SerialNumber).HasMaxLength(255);
-            entity.Property(e => e.ServiceId).HasColumnName("ServiceID");
             entity.Property(e => e.TechnologyId).HasColumnName("TechnologyID");
 
 
-            entity.HasOne(d => d.Service).WithMany(p => p.Devices)
-                .HasForeignKey(d => d.ServiceId)
-                .HasConstraintName("FK_Devices_Services");
+            
 
             entity.HasOne(d => d.Technology).WithMany(p => p.Devices)
                 .HasForeignKey(d => d.TechnologyId)

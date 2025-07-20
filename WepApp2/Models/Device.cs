@@ -39,7 +39,6 @@ public partial class Device
 
     public bool IsDeleted { get; set; }
 
-    public int? ServiceId { get; set; }
 
     [Required(ErrorMessage = "نوع التقنية مطلوب")]
     public int? TechnologyId { get; set; }
@@ -50,7 +49,6 @@ public partial class Device
 
     public virtual ICollection<Request> Requests { get; set; } = new List<Request>();
 
-    public virtual Service? Service { get; set; }
 
 
     [ForeignKey("TechnologyId")]
