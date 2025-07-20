@@ -1,43 +1,38 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using WepApp2.Data;
+using WepApp2.EmailService; 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ ربط الـ DbContext بقاعدة البيانات
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ✅ MVC + Razor Views
-builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IEmailService, EmailService>(); 
 
-// ✅ تفعيل المصادقة باستخدام الاسم الافتراضي "Cookies"
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    .AddCookie(options =>
     {
-        options.LoginPath = "/Auth/Login";               // صفحة تسجيل الدخول
-        options.AccessDeniedPath = "/Auth/AccessDenied"; // صفحة الرفض إذا لزم
+        options.LoginPath = "/Auth/Login";
     });
 
-// ✅ إضافة صلاحيات (authorization)
-builder.Services.AddAuthorization();
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+// Configure
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+}
+
 app.UseStaticFiles();
-
 app.UseRouting();
-
-// ✅ تفعيل المصادقة والصلاحيات
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Dashboard}/{action=Index}/{id?}");
-});
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Auth}/{action=Login}/{id?}");
 
 app.Run();
