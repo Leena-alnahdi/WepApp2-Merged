@@ -58,11 +58,11 @@ namespace WepApp2.Controllers
 
 
 
-		// ============================
-		// متوسط مدة الإصلاح بالأيام
-		// Average repair time in days
-		// ============================
-		private double CalculateAverageRepairTime()
+        // ============================
+        // متوسط مدة الإصلاح بالأيام
+        // Average repair time in days
+        // ============================
+        private double CalculateAverageRepairTime()
         {
             var completedMaintenanceRequests = _context.Requests
                 .Where(r => r.RequestType == "Maintenance" && r.AdminStatus == "Completed" && r.RequestDate != null && r.DeviceId != null)
@@ -72,8 +72,9 @@ namespace WepApp2.Controllers
                     d => d.DeviceID,
                     (r, d) => new { r.RequestDate, d.LastMaintenance }
                 )
-                 .Select(x => (x.LastMaintenance!.Value - x.RequestDate).Days)
-                 .ToList();
+                .Where(x => x.LastMaintenance != null)
+                .Select(x => (x.LastMaintenance.Value - x.RequestDate).TotalDays)
+                .ToList();
 
             if (completedMaintenanceRequests.Count == 0)
                 return 0;
@@ -82,11 +83,12 @@ namespace WepApp2.Controllers
         }
 
 
-		// ============================
-		// عرض نموذج إضافة جهاز جديد
-		// Display form to add new device
-		// ============================
-		public IActionResult AddDevice()
+
+        // ============================
+        // عرض نموذج إضافة جهاز جديد
+        // Display form to add new device
+        // ============================
+        public IActionResult AddDevice()
         {
             ViewBag.Technologies = _context.Technologies.ToList(); // ✅ بدون .Select
             return View("add-device", new Device());
