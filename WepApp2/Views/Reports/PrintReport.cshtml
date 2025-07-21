@@ -126,24 +126,21 @@
                                         string statusClass = "";
                                         switch (displayValue)
                                         {
-                                            case "جديد":
+                                            case "بانتظار اسناد المشرف":
                                                 statusClass = "print-report-status-new";
                                                 break;
-                                            case "مسند":
+                                            case "بانتظار موافقة المشرف":
                                                 statusClass = "print-report-status-assigned";
                                                 break;
-                                            case "موافق عليه":
-                                            case "موافق من المشرف":
+                                            case "موافق عليه من قبل المسؤول":
+                                            case "موافق عليه من قبل المشرف":
                                                 statusClass = "print-report-status-approved";
                                                 break;
-                                            case "مرفوض من المشرف":
+                                            case "مرفوض من قبل المشرف":
                                                 statusClass = "print-report-status-rejected";
                                                 break;
-                                            case "مرفوض":
+                                            case "مرفوض من قبل المسؤول":
                                                 statusClass = "print-report-status-rejected";
-                                                break;
-                                            case "منتهي":
-                                                statusClass = "print-report-status-completed";
                                                 break;
                                             case "نشط":
                                             case "عاملة":
