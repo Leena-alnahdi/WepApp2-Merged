@@ -25,7 +25,7 @@ public partial class Request
 
     public int ServiceId { get; set; }
 
-    public int DeviceId { get; set; }
+    public int? DeviceId { get; set; }
 
     public int? CourseID { get; set; }
 
