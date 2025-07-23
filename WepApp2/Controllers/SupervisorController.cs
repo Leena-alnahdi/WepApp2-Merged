@@ -61,7 +61,7 @@ namespace WepApp2.Controllers
                                   .ThenInclude(lv => lv.VisitDetails)
                                   .FirstOrDefault(r => r.RequestID == id);
 
-            if (request == null || request.RequestType != "زيارة معمل")
+            if (request == null || request.RequestType != "زيارة")
             {
                 return Json(new { visitType = "غير متاح" });
             }
